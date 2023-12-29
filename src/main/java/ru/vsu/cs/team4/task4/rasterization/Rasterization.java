@@ -1,4 +1,4 @@
-package ru.vsu.cs.team4.task4.render_engine.rasterization;
+package ru.vsu.cs.team4.task4.rasterization;
 
 public class Rasterization {
 
