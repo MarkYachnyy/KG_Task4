@@ -1,8 +1,8 @@
 package ru.vsu.cs.baklanova.Affine.AffineBuilder;
 
 
-import ru.vsu.cs.baklanova.math.matrix.Matrix4f;
-import ru.vsu.cs.baklanova.math.vector.Vector3f;
+import ru.vsu.cs.baklanova.Math.matrix.Matrix4f;
+import ru.vsu.cs.baklanova.Math.vector.Vector3f;
 import ru.vsu.cs.baklanova.model.Model;
 
 public class ModelAffine {

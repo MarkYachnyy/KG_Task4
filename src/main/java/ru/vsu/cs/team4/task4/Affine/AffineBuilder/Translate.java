@@ -2,7 +2,7 @@ package ru.vsu.cs.baklanova.Affine.AffineBuilder;
 
 import ru.vsu.cs.baklanova.Affine.AffineMatrix;
 import ru.vsu.cs.baklanova.Affine.AxisEnum;
-import ru.vsu.cs.baklanova.math.vector.Vector3f;
+import ru.vsu.cs.baklanova.Math.vector.Vector3f;
 public class Translate {
     AffineBuilder builder;
     public Translate(AffineBuilder builder) {

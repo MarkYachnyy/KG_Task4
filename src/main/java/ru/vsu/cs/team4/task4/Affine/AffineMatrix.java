@@ -1,8 +1,8 @@
 package ru.vsu.cs.baklanova.Affine;
 
 
-import ru.vsu.cs.baklanova.math.matrix.Matrix4f;
-import ru.vsu.cs.baklanova.math.vector.Vector3f;
+import ru.vsu.cs.baklanova.Math.matrix.Matrix4f;
+import ru.vsu.cs.baklanova.Math.vector.Vector3f;
 
 public class AffineMatrix {
     public static Matrix4f scaleMatrix(Vector3f vector) {
