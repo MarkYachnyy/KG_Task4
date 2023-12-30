@@ -23,7 +23,7 @@ public class Simple3DViewer extends Application {
         viewport.prefHeightProperty().bind(scene.heightProperty());
 
 
-        InputStream iconStream = getClass().getResourceAsStream("/images/logo.jpg");
+        InputStream iconStream = getClass().getResourceAsStream("/images/logo.png");
         Image image = new Image(iconStream);
         stage.getIcons().add(image);
 

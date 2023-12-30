@@ -1,8 +1,8 @@
 package ru.vsu.cs.team4.task4.objio;
 
 
-import ru.vsu.cs.team4.task4.math.Vector2f;
-import ru.vsu.cs.team4.task4.math.Vector3f;
+import ru.vsu.cs.team4.task4.math.vector.Vector2f;
+import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 import ru.vsu.cs.team4.task4.model.Group;
 import ru.vsu.cs.team4.task4.model.Model;
 import ru.vsu.cs.team4.task4.model.Polygon;

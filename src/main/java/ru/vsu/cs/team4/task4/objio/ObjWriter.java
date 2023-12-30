@@ -1,8 +1,8 @@
 package ru.vsu.cs.team4.task4.objio;
 
 
-import ru.vsu.cs.team4.task4.math.Vector2f;
-import ru.vsu.cs.team4.task4.math.Vector3f;
+import ru.vsu.cs.team4.task4.math.vector.Vector2f;
+import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 import ru.vsu.cs.team4.task4.model.Model;
 import ru.vsu.cs.team4.task4.model.Polygon;
 
@@ -63,7 +63,7 @@ public class ObjWriter {
     protected static StringBuilder getStringVerticesContent(ArrayList<Vector3f> vertices) {
         StringBuilder str = new StringBuilder();
         for (Vector3f v : vertices) {
-            str.append(OBJ_VERTEX_TOKEN + " " + v.coordsToStringSplitBySpace() + "\n");
+            str.append(OBJ_VERTEX_TOKEN + " " + coordsToStringSplitBySpace(v) + "\n");
         }
         str.append("# " + vertices.size() + " vertices\n");
         return str;
@@ -76,7 +76,7 @@ public class ObjWriter {
             return str;
         }
         for (Vector2f vt : textureVertices) {
-            str.append(OBJ_TEXTURE_TOKEN + " " + vt.coordsToStringSplitBySpace() +  "\n");
+            str.append(OBJ_TEXTURE_TOKEN + " " + coordsToStringSplitBySpace(vt) +  "\n");
         }
         str.append("# " + textureVertices.size() + " texture coords\n");
         return str;
@@ -88,7 +88,7 @@ public class ObjWriter {
             return str;
         }
         for (Vector3f vn : normals) {
-            str.append(OBJ_NORMAL_TOKEN + " " + vn.coordsToStringSplitBySpace() + "\n");
+            str.append(OBJ_NORMAL_TOKEN + " " + coordsToStringSplitBySpace(vn) + "\n");
         }
         str.append("# " + normals.size() + " vertex normals\n");
         return str;
@@ -171,5 +171,13 @@ public class ObjWriter {
         }
         return filePath.substring(0, filePath.indexOf('.') + 1) + "obj";
 
+    }
+
+    public static String coordsToStringSplitBySpace(Vector2f vector2f){
+        return vector2f.getX() + " " + vector2f.getY();
+    }
+
+    public static String coordsToStringSplitBySpace(Vector3f vector3f){
+        return vector3f.getX() + " " + vector3f.getY() + " " + vector3f.getZ();
     }
 }

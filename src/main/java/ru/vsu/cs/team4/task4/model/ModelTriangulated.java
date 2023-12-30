@@ -1,7 +1,7 @@
 package ru.vsu.cs.team4.task4.model;
 
-import ru.vsu.cs.team4.task4.math.Vector2f;
-import ru.vsu.cs.team4.task4.math.Vector3f;
+import ru.vsu.cs.team4.task4.math.vector.Vector2f;
+import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;

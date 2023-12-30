@@ -1,6 +1,6 @@
 package ru.vsu.cs.team4.task4.model;
 
-import ru.vsu.cs.team4.task4.math.Vector3f;
+import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ public class NormalCalculator {
         for (ArrayList<Vector3f> normalsAround : vertexNormalAccumulator) {
             Vector3f vertexNormal = normalsAround.stream().
                     collect(() -> new Vector3f(0, 0, 0), Vector3f::add, Vector3f::add).
-                    multiply(1f / normalsAround.size()).normalized();
+                    mul(1f / normalsAround.size()).normalized();
 
             res.add(vertexNormal);
         }

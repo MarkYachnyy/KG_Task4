@@ -1,7 +1,7 @@
 package ru.vsu.cs.team4.task4.render_engine;
 
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
+import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
+import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 
 public class Camera {
 

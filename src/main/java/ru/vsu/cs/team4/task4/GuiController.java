@@ -14,12 +14,12 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 import ru.vsu.cs.team4.task4.model.Model;
 import ru.vsu.cs.team4.task4.objio.ObjReader;
 import ru.vsu.cs.team4.task4.render_engine.Camera;
 import ru.vsu.cs.team4.task4.render_engine.RenderEngine;
 
-import javax.vecmath.Vector3f;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -56,7 +56,7 @@ public class GuiController {
     private LoadedModel loadedModel = new LoadedModel();
 
     private Camera camera = new Camera(
-            new Vector3f(0, 00, 100),
+            new Vector3f(0, 0, 100),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
 
@@ -101,7 +101,11 @@ public class GuiController {
             camera.setAspectRatio((float) (width / height));
 
             if (mesh != null) {
-                RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) width, (int) height);
+                try {
+                    RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) width, (int) height);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
