@@ -1,54 +1,172 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="anchorPane" xmlns:fx="http://javafx.com/fxml" fx:controller="ru.vsu.cs.team4.task4.GuiController">
-    <MenuBar>
+<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.vsu.cs.team4.task4.GuiController">
+    <MenuBar prefWidth="1339.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
         <Menu mnemonicParsing="false" text="File">
             <MenuItem mnemonicParsing="false" onAction="#onOpenModelMenuItemClick" text="Load Model">
             <accelerator>
-                <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="F"/>
+                <KeyCodeCombination alt="UP" code="F" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
             </accelerator>
             </MenuItem>
+         <MenuItem mnemonicParsing="false" onAction="#onSaveModelMenuItemClick" text="Save Model">
+            <accelerator>
+               <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+            </accelerator>
+         </MenuItem>
         </Menu>
         <Menu mnemonicParsing="false" text="Camera Options">
             <MenuItem mnemonicParsing="false" onAction="#handleCameraForward" text="Forward">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="UP"/>
+                    <KeyCodeCombination alt="UP" code="UP" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#handleCameraBackward" text="Backward">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="DOWN"/>
+                    <KeyCodeCombination alt="UP" code="DOWN" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#handleCameraLeft" text="Left">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="LEFT"/>
+                    <KeyCodeCombination alt="UP" code="LEFT" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#handleCameraRight" text="Right">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="RIGHT"/>
+                    <KeyCodeCombination alt="UP" code="RIGHT" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#handleCameraUp" text="Up">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="W"/>
+                    <KeyCodeCombination alt="UP" code="W" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
             <MenuItem mnemonicParsing="false" onAction="#handleCameraDown" text="Down">
                 <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="S"/>
+                    <KeyCodeCombination alt="UP" code="S" control="UP" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
         </Menu>
+      <Menu mnemonicParsing="false" text="S/H Transformations">
+        <items>
+            <MenuItem mnemonicParsing="false" onAction="#onClickShowHide" text="S/H" />
+        </items>
+      </Menu>
+      <Menu mnemonicParsing="false" text="S/H Models">
+        <items>
+            <MenuItem mnemonicParsing="false" onAction="#onClickShowHideModels" text="S/H" />
+        </items>
+      </Menu>
     </MenuBar>
 
-    <Canvas fx:id="canvas" width="1600" height="870" AnchorPane.topAnchor="30.0"/>
+    <Canvas fx:id="canvas" height="876.0" layoutY="24.0" width="1600" AnchorPane.topAnchor="24.0" />
+   <Button layoutX="17.0" layoutY="35.0" mnemonicParsing="false" onAction="#onClickDeleteModel" prefHeight="25.0" prefWidth="72.0" text="-" />
+   <Button layoutX="89.0" layoutY="35.0" mnemonicParsing="false" onAction="#onClickAddModel" prefHeight="25.0" prefWidth="72.0" text="+" />
+   <BorderPane layoutX="1394.0" layoutY="25.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.rightAnchor="0.0">
+      <right>
+         <TitledPane fx:id="transformationsPane" animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="577.0" prefWidth="250.0" text="Transformations" BorderPane.alignment="CENTER">
+           <content>
+             <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="250.0">
+                  <children>
+                     <Label layoutX="14.0" layoutY="1.0" prefHeight="27.0" prefWidth="65.0" text="Rotate:">
+                        <font>
+                           <Font name="System Bold" size="18.0" />
+                        </font>
+                     </Label>
+                     <Label layoutX="39.0" layoutY="29.0" text="X:">
+                        <font>
+                           <Font size="16.0" />
+                        </font>
+                     </Label>
+                     <Label layoutX="39.0" layoutY="98.0" text="Y:">
+                        <font>
+                           <Font size="16.0" />
+                        </font>
+                     </Label>
+                     <Label layoutX="39.0" layoutY="166.0" text="Z:">
+                        <font>
+                           <Font size="16.0" />
+                        </font>
+                     </Label>
+                     <Label layoutX="40.0" layoutY="283.0" text="X:">
+                        <font>
+                           <Font size="16.0" />
+                        </font>
+                     </Label>
+                     <Label layoutX="40.0" layoutY="321.0" text="Y:">
+                        <font>
+                           <Font size="16.0" />
+                        </font>
+                     </Label>
+                     <Label layoutX="39.0" layoutY="355.0" text="Z:">
+                        <font>
+                           <Font size="16.0" />
+                        </font>
+                     </Label>
+                     <Label layoutX="39.0" layoutY="429.0" text="X:">
+                        <font>
+                           <Font size="16.0" />
+                        </font>
+                     </Label>
+                     <Label layoutX="39.0" layoutY="466.0" text="Y:">
+                        <font>
+                           <Font size="16.0" />
+                        </font>
+                     </Label>
+                     <Label layoutX="40.0" layoutY="506.0" text="Z:">
+                        <font>
+                           <Font size="16.0" />
+                        </font>
+                     </Label>
+                     <Label layoutX="14.0" layoutY="244.0" prefHeight="27.0" prefWidth="53.0" text="Scale:">
+                        <font>
+                           <Font name="System Bold" size="18.0" />
+                        </font>
+                     </Label>
+                     <Label layoutX="12.0" layoutY="398.0" text="Translate:">
+                        <font>
+                           <Font name="System Bold" size="18.0" />
+                        </font>
+                     </Label>
+                     <Slider layoutX="73.0" layoutY="54.0" majorTickUnit="30.0" max="360.0" min="-360.0" minorTickCount="5" showTickLabels="true" showTickMarks="true" />
+                     <Slider layoutX="74.0" layoutY="123.0" majorTickUnit="30.0" max="360.0" min="-360.0" minorTickCount="5" showTickLabels="true" showTickMarks="true" />
+                     <Slider layoutX="73.0" layoutY="191.0" majorTickUnit="30.0" max="360.0" min="-360.0" minorTickCount="5" showTickLabels="true" showTickMarks="true" />
+                     <TextField layoutX="69.0" layoutY="166.0" text="0" />
+                     <TextField layoutX="69.0" layoutY="98.0" text="0" />
+                     <TextField layoutX="70.0" layoutY="29.0" text="0" />
+                     <TextField layoutX="69.0" layoutY="283.0" text="0" />
+                     <TextField layoutX="69.0" layoutY="321.0" text="0" />
+                     <TextField layoutX="69.0" layoutY="355.0" text="0" />
+                     <TextField layoutX="69.0" layoutY="429.0" text="0" />
+                     <TextField layoutX="69.0" layoutY="466.0" text="0" />
+                     <TextField layoutX="69.0" layoutY="506.0" text="0" />
+                  </children>
+               </AnchorPane>
+           </content>
+         </TitledPane>
+      </right>
+   </BorderPane>
+   <TableView fx:id="tableView" layoutX="14.0" layoutY="82.0" prefHeight="773.0" prefWidth="294.0">
+     <columns>
+       <TableColumn fx:id="modelPath" prefWidth="150.0" text="Model Name" />
+       <TableColumn fx:id="isActive" prefWidth="75.0" text="IsActive" />
+         <TableColumn fx:id="isEditable" prefWidth="75.0" text="IsEditable" />
+     </columns>
+   </TableView>
 </AnchorPane>
