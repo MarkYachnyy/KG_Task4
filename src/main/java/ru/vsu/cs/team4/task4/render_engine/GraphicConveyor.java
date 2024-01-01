@@ -29,8 +29,8 @@ public class GraphicConveyor {
         resultY.normalized();
         resultZ.normalized();
 
-        float[][] matrix = new float[][] {
-                {resultX.getX(), resultY.getX(), resultZ.getX(),  -resultX.dotProduct(eye)},
+        float[][] matrix = new float[][]{
+                {resultX.getX(), resultY.getX(), resultZ.getX(), -resultX.dotProduct(eye)},
                 {resultX.getY(), resultY.getY(), resultZ.getY(), -resultY.dotProduct(eye)},
                 {resultX.getZ(), resultY.getZ(), resultZ.getZ(), -resultZ.dotProduct(eye)},
                 {0, 0, 0, 1}};
@@ -43,7 +43,7 @@ public class GraphicConveyor {
             final float nearPlane,
             final float farPlane) {
         float tangentMinusOnDegree = (float) (1.0F / (Math.tan(fov * 0.5F)));
-        return new Matrix4f(new float[][] {
+        return new Matrix4f(new float[][]{
                 {tangentMinusOnDegree / aspectRatio, 0, 0, 0},
                 {0, tangentMinusOnDegree, 0, 0},
                 {0, 0, (farPlane + nearPlane) / (farPlane - nearPlane), 2 * farPlane * nearPlane / (nearPlane - farPlane)},
@@ -67,6 +67,6 @@ public class GraphicConveyor {
     }
 
     public static Point2f vertexToPoint(final Vector3f vertex, final int width, final int height) {
-        return new Point2f(vertex.getX() * width + width / 2.0F, -vertex.getY() * height + height / 2.0F);
+        return new Point2f((int) (vertex.getX() * width + width / 2.0F), (int) (-vertex.getY() * height + height / 2.0F));
     }
 }

@@ -4,31 +4,27 @@ package ru.vsu.cs.team4.task4.math;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 
 public class Point2f {
-    private float x;
-    private float y;
+    private int x;
+    private int y;
 
-    public Point2f(float x, float y) {
+    public Point2f(int x, int y) {
         this.x = x;
         this.y = y;
     }
 
-    public void setX(float x) {
+    public void setX(int x) {
         this.x = x;
     }
 
-    public void setY(float y) {
+    public void setY(int y) {
         this.y = y;
     }
 
-    public float getX() {
+    public int getX() {
         return x;
     }
 
-    public float getY() {
+    public int getY() {
         return y;
-    }
-
-    public static Point2f vertexToPoint(final Vector3f vertex, final int width, final int height) {
-        return new Point2f(vertex.getX() * width + width / 2.0F, -vertex.getY() * height + height / 2.0F);
     }
 }

@@ -8,7 +8,6 @@ public class Scene {
 
     private List<LoadedModel> models;
 
-
     public Scene() {
         this.models = new ArrayList<>();
     }

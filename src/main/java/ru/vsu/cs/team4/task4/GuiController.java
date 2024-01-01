@@ -53,7 +53,7 @@ public class GuiController {
 
 
     private Model mesh = null;
-    private LoadedModel loadedModel = new LoadedModel();
+    private LoadedModel loadedModel = null;
 
     private Camera camera = new Camera(
             new Vector3f(0, 0, 100),
@@ -68,7 +68,7 @@ public class GuiController {
 
         //creates table
         modelPath.setCellValueFactory(new PropertyValueFactory<>("modelName"));
-        isActive.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getIsActive()));
+        isActive.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getActivationCheckbox()));
         isEditable.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getIsEditable()));
 
         transformationsPane.setVisible(false);
@@ -133,7 +133,6 @@ public class GuiController {
             String fileContent = Files.readString(fileName);
             mesh = ObjReader.read(fileContent);
             loadedModel.setModelPath(fileName.toString());
-            loadedModel.setModelName(loadedModel.getModelName());
             loadedModel.setIsActive(new CheckBox());
             loadedModel.setIsEditable(new CheckBox());
             // Update the existing ObservableList
