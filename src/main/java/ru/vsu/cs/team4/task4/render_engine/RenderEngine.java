@@ -1,6 +1,7 @@
 package ru.vsu.cs.team4.task4.render_engine;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.WritableImage;
 import ru.vsu.cs.team4.task4.math.Point2f;
 import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
 import ru.vsu.cs.team4.task4.model.Model;

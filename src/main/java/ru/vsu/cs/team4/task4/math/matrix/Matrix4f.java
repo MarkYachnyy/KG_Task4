@@ -27,7 +27,7 @@ public class Matrix4f implements Matrix<Matrix4f>{
                                          0.0f, 0.0f, 0.0f, 1.0f});
     }
 
-    public float[][] getValues() {return matrixFromArray(values.clone());}
+    public float[][] getValues() {return matrixFromArray(values);}
 
     public void setValues(float[][] values) {this.values = arrFromMatrix(values.clone());}
     public void setValue(float num, int i, int j) {

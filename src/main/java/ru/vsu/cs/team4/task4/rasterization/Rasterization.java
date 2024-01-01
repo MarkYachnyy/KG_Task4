@@ -2,7 +2,7 @@ package ru.vsu.cs.team4.task4.rasterization;
 
 public class Rasterization {
 
-    public static void fillTriangle(CustomPixelWriter pixelWriter, int x1, int y1, int x2, int y2, int x3, int y3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, int[][] texture) {
+    public static void fillTriangle(ZBufferPixelWriter pixelWriter, int x1, int y1, float z1, int x2, int y2, float z2, int x3, int y3, float z3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, int[][] texture) {
 
         if (y1 > y2) {
             int t = y1;
@@ -20,6 +20,10 @@ public class Rasterization {
             tf = tx1;
             tx1 = tx2;
             tx2 = tf;
+
+            float tz = z1;
+            z1 = z2;
+            z2 = tz;
         }
 
         if (y1 > y3) {
@@ -38,6 +42,10 @@ public class Rasterization {
             tf = tx1;
             tx1 = tx3;
             tx3 = tf;
+
+            float tz = z1;
+            z1 = z3;
+            z3 = tz;
         }
 
         if (y2 > y3) {
@@ -56,12 +64,16 @@ public class Rasterization {
             tf = tx2;
             tx2 = tx3;
             tx3 = tf;
+
+            float tz = z2;
+            z2 = z3;
+            z3 = tz;
         }
 
         int dxL, dyL, dxR, dyR, yL, yR, xL, xR;
         int dxL_sign, dxR_sign;
         boolean steepL, steepR;
-        float txL, tyL, txR, tyR;
+        float txL, tyL, txR, tyR, zL, zR;
         int tWidth = texture.length;
         int tHeight = texture[0].length;
 
@@ -82,6 +94,9 @@ public class Rasterization {
 
             txR = tx3;
             tyR = ty3;
+
+            zR = z3;
+            zL = z2;
         } else {
             dxL = x3 - x1;
             dxR = x2 - x1;
@@ -97,6 +112,9 @@ public class Rasterization {
 
             txR = tx2;
             tyR = ty2;
+
+            zL = z3;
+            zR = z2;
         }
 
 
@@ -128,7 +146,8 @@ public class Rasterization {
             if (steepL) {
                 float tx = tx1 * (yL - y0) / dyL + txL * (y0 - y1) / dyL;
                 float ty = ty1 * (yL - y0) / dyL + tyL * (y0 - y1) / dyL;
-                pixelWriter.setRGB(xcL, y0, texture[(int) (tx * tWidth)][(int) (ty * tHeight)]);
+                float z = z1 * (yL - y0) / dyL + zL * (y0 - y1) / dyL;
+                pixelWriter.setRGB(xcL, y0, z, texture[(int) (tx * tWidth)][(int) (ty * tHeight)]);
 
                 from = xcL + 1;
                 faultL_num += 2 * dxL;
@@ -140,14 +159,15 @@ public class Rasterization {
                 int xToMove = 1 + (faultL_denom - faultL_num) / (2 * dyL);
                 xcL += xToMove * dxL_sign;
                 faultL_num += 2 * dyL * xToMove - faultL_denom;
-                drawLineWithInterpolation(pixelWriter, x1, xL, tx1, ty1, txL, tyL, xcL - dxL_sign, y0, xToMove, -dxL_sign, texture);
+                drawLineWithInterpolation(pixelWriter, x1, z1, xL, zL, tx1, ty1, txL, tyL, xcL - dxL_sign, y0, xToMove, -dxL_sign, texture);
                 from = Math.max(xcL, xcL - xToMove * dxL_sign + 1);
             }
 
             if (steepR) {
                 float tx = tx1 * (yR - y0) / dyR + txR * (y0 - y1) / dyR;
                 float ty = ty1 * (yR - y0) / dyR + tyR * (y0 - y1) / dyR;
-                pixelWriter.setRGB(xcR, y0, texture[(int) (tx * tWidth)][(int) (ty * tHeight)]);
+                float z = z1 * (yR - y0) / dyR + zR * (y0 - y1) / dyR;
+                pixelWriter.setRGB(xcR, y0, z, texture[(int) (tx * tWidth)][(int) (ty * tHeight)]);
                 to = xcR - 1;
                 faultR_num += 2 * dxR;
                 if (faultR_num >= faultR_denom) {
@@ -158,22 +178,22 @@ public class Rasterization {
                 int xToMove = 1 + (faultR_denom - faultR_num) / (2 * dyR);
                 xcR += xToMove * dxR_sign;
                 faultR_num += 2 * dyR * xToMove - faultR_denom;
-                drawLineWithInterpolation(pixelWriter, x1, xR, tx1, ty1, txR, tyR, xcR - dxR_sign, y0, xToMove, -dxR_sign, texture);
+                drawLineWithInterpolation(pixelWriter, x1, z1, xR, zR, tx1, ty1, txR, tyR, xcR - dxR_sign, y0, xToMove, -dxR_sign, texture);
                 to = Math.min(xcR, xcR - xToMove * dxR_sign - 1);
             }
 
-            drawLineWithInterpolation(pixelWriter, x1, x2, x3, y1, y2, y3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, texture);
+            drawLineWithInterpolation(pixelWriter, x1, x2, x3, y1, y2, y3, z1, z2, z3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, texture);
         }
 
         //ОБРАБОТКА ПОСЛЕДНЕЙ ИТЕРАЦИИ ВЕРХНЕЙ ПОЛОВИНЫ
 
         if (longSideOnTheRight) {
             if (!steepL)
-                drawLineWithInterpolation(pixelWriter, x1, xL, tx1, ty1, txL, tyL, x2, y2, Math.abs(xcL - x2) + 1, -dxL_sign, texture);
+                drawLineWithInterpolation(pixelWriter, x1, z1, xL, zL, tx1, ty1, txL, tyL, x2, y2, Math.abs(xcL - x2) + 1, -dxL_sign, texture);
             xcL = x2;
         } else {
             if (!steepR)
-                drawLineWithInterpolation(pixelWriter, x1, xR, tx1, ty1, txR, tyR, x2, y2, Math.abs(xcR - x2) + 1, -dxR_sign, texture);
+                drawLineWithInterpolation(pixelWriter, x1, z1, xR, zR, tx1, ty1, txR, tyR, x2, y2, Math.abs(xcR - x2) + 1, -dxR_sign, texture);
             xcR = x2;
         }
 
@@ -196,6 +216,9 @@ public class Rasterization {
             txL = tx2;
             tyL = ty2;
 
+            zL = z2;
+            zR = z1;
+
         } else {
             dxR = x3 - xR;
             dxR_sign = dxR == 0 ? 1 : Math.abs(dxR) / dxR;
@@ -213,6 +236,9 @@ public class Rasterization {
             tyR = ty2;
             txL = tx1;
             tyL = ty1;
+
+            zL = z1;
+            zR = z2;
         }
 
         //ОТРИСОВКА НИЖНЕЙ ПОЛОВИНЫ
@@ -221,7 +247,8 @@ public class Rasterization {
             if (steepL) {
                 float tx = tx3 * (y0 - yL) / dyL + txL * (y3 - y0) / dyL;
                 float ty = ty3 * (y0 - yL) / dyL + tyL * (y3 - y0) / dyL;
-                pixelWriter.setRGB(xcL, y0, texture[(int) (tx * tWidth)][(int) (ty * tHeight)]);
+                float z = z3 * (y0 - yL) / dyL + zL * (y3 - y0) / dyL;
+                pixelWriter.setRGB(xcL, y0, z, texture[(int) (tx * tWidth)][(int) (ty * tHeight)]);
 
                 from = xcL + 1;
                 faultL_num += 2 * dxL;
@@ -234,7 +261,7 @@ public class Rasterization {
                 int xToMove = 1 + (faultL_denom - faultL_num) / (2 * dyL);
                 xcL += xToMove * dxL_sign;
                 faultL_num += 2 * dyL * xToMove - faultL_denom;
-                drawLineWithInterpolation(pixelWriter, x3, xL, tx3, ty3, txL, tyL, xcL - dxL_sign, y0, xToMove, -dxL_sign, texture);
+                drawLineWithInterpolation(pixelWriter, x3, z3, xL, zL, tx3, ty3, txL, tyL, xcL - dxL_sign, y0, xToMove, -dxL_sign, texture);
                 from = Math.max(xcL, xcL - xToMove * dxL_sign + 1);
             }
 
@@ -242,7 +269,8 @@ public class Rasterization {
 
                 float tx = tx3 * (y0 - yR) / dyR + txR * (y3 - y0) / dyR;
                 float ty = ty3 * (y0 - yR) / dyR + tyR * (y3 - y0) / dyR;
-                pixelWriter.setRGB(xcR, y0, texture[(int) (tx * tWidth)][(int) (ty * tHeight)]);
+                float z = z3 * (y0 - yL) / dyL + zR * (y3 - y0) / dyL;
+                pixelWriter.setRGB(xcR, y0, z, texture[(int) (tx * tWidth)][(int) (ty * tHeight)]);
 
                 to = xcR - 1;
                 faultR_num += 2 * dxR;
@@ -254,24 +282,24 @@ public class Rasterization {
                 int xToMove = 1 + (faultR_denom - faultR_num) / (2 * dyR);
                 xcR += xToMove * dxR_sign;
                 faultR_num += 2 * dyR * xToMove - faultR_denom;
-                drawLineWithInterpolation(pixelWriter, x3, xR, tx3, ty3, txR, tyR, xcR - dxR_sign, y0, xToMove, -dxR_sign, texture);
+                drawLineWithInterpolation(pixelWriter, x3, z3, xR, zR, tx3, ty3, txR, tyR, xcR - dxR_sign, y0, xToMove, -dxR_sign, texture);
                 to = Math.min(xcR, xcR - xToMove * dxR_sign - 1);
             }
 
-            drawLineWithInterpolation(pixelWriter, x1, x2, x3, y1, y2, y3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, texture);
+            drawLineWithInterpolation(pixelWriter, x1, x2, x3, y1, y2, y3, z1, z2, z3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, texture);
         }
 
         //ОБРАБОТКА ПОСЛЕДНЕЙ ИТЕРАЦИИ ПОСЛЕДНЕЙ ПОЛОВИНЫ
 
         if (!steepL)
-            drawLineWithInterpolation(pixelWriter, x3, xL, tx3, ty3, txL, tyL, x3, y3, Math.abs(xcL - x3) + 1, -dxL_sign, texture);
+            drawLineWithInterpolation(pixelWriter, x3, z3, xL, zL, tx3, ty3, txL, tyL, x3, y3, Math.abs(xcL - x3) + 1, -dxL_sign, texture);
 
         if (!steepR)
-            drawLineWithInterpolation(pixelWriter, x3, xR, tx3, ty3, txR, tyR, x3, y3, Math.abs(xcR - x3) + 1, -dxR_sign, texture);
+            drawLineWithInterpolation(pixelWriter, x3, z3, xR, zL, tx3, ty3, txR, tyR, x3, y3, Math.abs(xcR - x3) + 1, -dxR_sign, texture);
 
     }
 
-    private static void drawLineWithInterpolation(CustomPixelWriter pixelWriter, int x1, int x2, float tx1, float ty1, float tx2, float ty2, int xc, int yc, int l, int sign, int[][] texture) {
+    private static void drawLineWithInterpolation(ZBufferPixelWriter pixelWriter, int x1, float z1, int x2, float z2, float tx1, float ty1, float tx2, float ty2, int xc, int yc, int l, int sign, int[][] texture) {
         int x0 = xc;
         int x01 = x2 - xc;
         int x02 = xc - x1;
@@ -283,15 +311,16 @@ public class Rasterization {
         for (int i = 0; i < l; i++) {
             float tx = tx1 * x01 / dx + tx2 * x02 / dx;
             float ty = ty1 * x01 / dx + ty2 * x02 / dx;
+            float z = z1 * x01 / dx + z2 * x02 / dx;
 
-            pixelWriter.setRGB(x0, yc, texture[(int) (tx * width)][(int) (ty * height)]);
+            pixelWriter.setRGB(x0, yc, z, texture[(int) (tx * width)][(int) (ty * height)]);
             x0 += sign;
             x01 -= sign;
             x02 += sign;
         }
     }
 
-    private static void drawLineWithInterpolation(CustomPixelWriter pixelWriter, int x1, int x2, int x3, int y1, int y2, int y3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, int yc, int from, int to, int[][] texture) {
+    private static void drawLineWithInterpolation(ZBufferPixelWriter pixelWriter, int x1, int x2, int x3, int y1, int y2, int y3, float z1, float z2, float z3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, int yc, int from, int to, int[][] texture) {
 
         int s = x2 * y3 + x3 * y1 + x1 * y2 - y1 * x2 - y2 * x3 - x1 * y3;
         int s1 = x2 * y3 + from * y2 + yc * x3 - yc * x2 - y2 * x3 - from * y3;
@@ -308,9 +337,9 @@ public class Rasterization {
         for (int x0 = from; x0 <= to; x0++) {
             float tx = tx1 * s1 / s + tx2 * s2 / s + tx3 * s3 / s;
             float ty = ty1 * s1 / s + ty2 * s2 / s + ty3 * s3 / s;
+            float z = z1 * s1 / s + z2 * s2 / s + z3 * s3 / s;
 
-
-            pixelWriter.setRGB(x0, yc, texture[(int) (tx * width)][(int) (ty * height)]);
+            pixelWriter.setRGB(x0, yc, z, texture[(int) (tx * width)][(int) (ty * height)]);
 
             s1 += ds1;
             s2 += ds2;

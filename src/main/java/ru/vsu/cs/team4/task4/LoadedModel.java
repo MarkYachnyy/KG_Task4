@@ -3,36 +3,31 @@ package ru.vsu.cs.team4.task4;
 
 import javafx.scene.control.CheckBox;
 import ru.vsu.cs.team4.task4.model.Model;
+import ru.vsu.cs.team4.task4.model.ModelTriangulated;
 
 
 public class LoadedModel {
 
-    private Model model;
+    private ModelTriangulated model;
     private String modelPath;
     private CheckBox isActive;
     private CheckBox isEditable;
-    private String modelName;
+    private int[][] textureARGB;
 
-    public void setModelName(String modelName) {
-        this.modelName = modelName;
-    }
-
-    public CheckBox getIsActive() {
+    public CheckBox getActivationCheckbox() {
         return isActive;
     }
 
-    public LoadedModel(Model model, String modelPath) {
+    public boolean isActive(){
+        return isActive.isSelected();
+    }
+
+    public LoadedModel(ModelTriangulated model, String modelPath) {
         this.model = model;
         this.modelPath = modelPath;
     }
 
-    public LoadedModel() {
-        this.model= new Model();
-        this.modelPath = new String();
-        this.isActive = new CheckBox();
-    }
-
-    public LoadedModel(Model model, String modelPath, CheckBox isActive) {
+    public LoadedModel(ModelTriangulated model, String modelPath, CheckBox isActive) {
         this.model = model;
         this.modelPath = modelPath;
         this.isActive = isActive;
@@ -45,7 +40,7 @@ public class LoadedModel {
         return pathSegments[pathSegments.length - 1];
     }
 
-    public void setModel(Model model) {
+    public void setModel(ModelTriangulated model) {
         this.model = model;
     }
 
@@ -61,11 +56,23 @@ public class LoadedModel {
         return isEditable;
     }
 
+    public ModelTriangulated getModel() {
+        return model;
+    }
+
     public void setIsActive(CheckBox isActive) {
         this.isActive = isActive;
     }
 
     public String getModelPath() {
         return modelPath;
+    }
+
+    public int[][] getTextureARGB() {
+        return textureARGB;
+    }
+
+    public void setTextureARGB(int[][] textureARGB) {
+        this.textureARGB = textureARGB;
     }
 }
