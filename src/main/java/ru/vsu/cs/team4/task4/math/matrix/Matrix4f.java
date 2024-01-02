@@ -29,7 +29,12 @@ public class Matrix4f implements Matrix<Matrix4f>{
 
     public float[][] getValues() {return matrixFromArray(values);}
 
+    public float get(int i, int j){
+        return values[4 * i + j];
+    }
+
     public void setValues(float[][] values) {this.values = arrFromMatrix(values.clone());}
+
     public void setValue(float num, int i, int j) {
         this.values[i * 4 + j] = num;
     }

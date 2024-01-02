@@ -1,58 +1,72 @@
 package ru.vsu.cs.team4.task4.render_engine;
 
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.WritableImage;
+import ru.vsu.cs.team4.task4.LoadedModel;
+import ru.vsu.cs.team4.task4.Scene;
 import ru.vsu.cs.team4.task4.math.Point2f;
 import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
-import ru.vsu.cs.team4.task4.model.Model;
+import ru.vsu.cs.team4.task4.math.vector.Vector2f;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
+import ru.vsu.cs.team4.task4.model.ModelTriangulated;
+import ru.vsu.cs.team4.task4.model.Polygon;
+import ru.vsu.cs.team4.task4.rasterization.ZBufferPixelWriter;
+import ru.vsu.cs.team4.task4.rasterization.Rasterization;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
 public class RenderEngine {
+    private static void renderModel(final int[] buffer, int width, int height,
+                                    final Matrix4f modelViewProjectionMatrix,
+                                    final ModelTriangulated mesh, int[][] textureARGB, float[][] Z) {
 
-    public static void render (
-            final GraphicsContext graphicsContext,
-            final Camera camera,
-            final Model mesh,
-            final int width,
-            final int height) throws Exception {
-        Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(new Vector3f(1, 1, 1), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
-        Matrix4f viewMatrix = camera.getViewMatrix();
-        Matrix4f projectionMatrix = camera.getProjectionMatrix();
+        for (Polygon polygon : mesh.getPolygons()) {
+            Vector3f v1 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, mesh.getVertices().get(polygon.getVertexIndices().get(0)));
+            Vector3f v2 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, mesh.getVertices().get(polygon.getVertexIndices().get(1)));
+            Vector3f v3 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, mesh.getVertices().get(polygon.getVertexIndices().get(2)));
 
-        Matrix4f modelViewProjectionMatrix = new Matrix4f(modelMatrix.getValues());
-        modelViewProjectionMatrix.mul(viewMatrix);
-        modelViewProjectionMatrix.mul(projectionMatrix);
+            Point2f p1 = GraphicConveyor.vertexToPoint(v1, width, height);
+            Point2f p2 = GraphicConveyor.vertexToPoint(v2, width, height);
+            Point2f p3 = GraphicConveyor.vertexToPoint(v3, width, height);
 
-        final int nPolygons = mesh.getPolygons().size();
-        for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
-            final int nVerticesInPolygon = mesh.getPolygons().get(polygonInd).getVertexIndices().size();
+            Vector2f vt1 = mesh.getTextureVertices().get(polygon.getTextureVertexIndices().get(0));
+            Vector2f vt2 = mesh.getTextureVertices().get(polygon.getTextureVertexIndices().get(1));
+            Vector2f vt3 = mesh.getTextureVertices().get(polygon.getTextureVertexIndices().get(2));
 
-            ArrayList<Point2f> resultPoints = new ArrayList<>();
-            for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
-                Vector3f vertex = mesh.getVertices().get(mesh.getPolygons().get(polygonInd).getVertexIndices().get(vertexInPolygonInd));
+            ZBufferPixelWriter pixelWriter = (x, y, z, color) -> {
+                System.out.println("rasterizing at" + x + " " + y);
+                if(x < 1500 && y < 850){
+                    if(z < Z[x][y]){
+                        Z[x][y] = z;
+                        buffer[width + height * y] = color;
+                    }
+                }
+            };
 
-                Vector3f vertexVecmath = new Vector3f(vertex.getX(), vertex.getY(), vertex.getZ());
-
-                Point2f resultPoint = GraphicConveyor.vertexToPoint(GraphicConveyor.multiplyMatrix4ByVector3(modelViewProjectionMatrix, vertexVecmath), width, height);
-                resultPoints.add(resultPoint);
-            }
-
-            for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
-                graphicsContext.strokeLine(
-                        resultPoints.get(vertexInPolygonInd - 1).getX(),
-                        resultPoints.get(vertexInPolygonInd - 1).getY(),
-                        resultPoints.get(vertexInPolygonInd).getX(),
-                        resultPoints.get(vertexInPolygonInd).getY());
-            }
-
-            if (nVerticesInPolygon > 0)
-                graphicsContext.strokeLine(
-                        resultPoints.get(nVerticesInPolygon - 1).getX(),
-                        resultPoints.get(nVerticesInPolygon - 1).getY(),
-                        resultPoints.get(0).getX(),
-                        resultPoints.get(0).getY());
+            Rasterization.fillTriangle(pixelWriter, p1.getX(), p1.getY(), v1.getZ(), p2.getX(), p2.getY(), v2.getZ(), p3.getX(), p3.getY(), v3.getZ(),
+                    vt1.getX(), vt1.getY(), vt2.getX(), vt2.getY(), vt3.getX(), vt3.getY(), textureARGB);
         }
     }
+
+
+    public static void renderScene(final int[] buffer, int width, int height,
+                                   final Camera camera,
+                                   final Scene scene) throws Exception {
+        Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(new Vector3f(1, 1, 1), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
+        Matrix4f viewMatrix = GraphicConveyor.lookAt(camera.getPosition(), camera.getTarget());
+        Matrix4f projectionMatrix = GraphicConveyor.perspective(camera.getFov(), camera.getAspectRatio(), camera.getNearPlane(), camera.getFarPlane());
+        Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix.getValues());
+        modelViewProjectionMatrix.mul(viewMatrix);
+        modelViewProjectionMatrix.mul(modelMatrix);
+
+        float[][] Z = new float[width][height];
+        for (float[] row : Z) {
+            Arrays.fill(row, Float.POSITIVE_INFINITY);
+        }
+
+        for (LoadedModel loadedModel : scene.getModels()) {
+            if (loadedModel.isActive()) {
+                renderModel(buffer, width, height, modelViewProjectionMatrix, loadedModel.getModel(), loadedModel.getTextureARGB(), Z);
+            }
+        }
+    }
+
 }

@@ -48,12 +48,20 @@ public class Camera {
         this.target.add(target);
     }
 
-    Matrix4f getViewMatrix() {
-        return GraphicConveyor.lookAt(position, target);
+    public float getFov() {
+        return fov;
     }
 
-    Matrix4f getProjectionMatrix() {
-        return GraphicConveyor.perspective(fov, aspectRatio, nearPlane, farPlane);
+    public float getAspectRatio() {
+        return aspectRatio;
+    }
+
+    public float getNearPlane() {
+        return nearPlane;
+    }
+
+    public float getFarPlane() {
+        return farPlane;
     }
 
     private Vector3f position;
