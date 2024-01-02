@@ -25,6 +25,7 @@ public class LoadedModel {
     public LoadedModel(ModelTriangulated model, String modelPath) {
         this.model = model;
         this.modelPath = modelPath;
+        this.textureARGB = new int[][]{{111111}};
     }
 
     public LoadedModel(ModelTriangulated model, String modelPath, CheckBox isActive) {

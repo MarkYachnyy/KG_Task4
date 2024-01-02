@@ -1,4 +1,4 @@
-package ru.vsu.cs.team4.task4.affineTransformation.affineComposite;
+package ru.vsu.cs.team4.task4.Affine.affineComposite;
 
 
 import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
@@ -15,7 +15,7 @@ public class RotateY implements AffineComposite {
     }
 
     @Override
-    public void applyTransform(Matrix4f m) {
-        m.mul(rotationMatrix);
+    public Matrix4f getMatrix() {
+        return rotationMatrix;
     }
 }

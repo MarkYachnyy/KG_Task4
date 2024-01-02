@@ -10,18 +10,21 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 import ru.vsu.cs.team4.task4.model.Model;
+import ru.vsu.cs.team4.task4.model.ModelTriangulated;
 import ru.vsu.cs.team4.task4.objio.ObjReader;
 import ru.vsu.cs.team4.task4.render_engine.Camera;
 import ru.vsu.cs.team4.task4.render_engine.RenderEngine;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -33,15 +36,13 @@ public class GuiController {
     AnchorPane anchorPane;
 
     @FXML
-    private Canvas canvas;
+    private ImageView imageView;
 
     @FXML
     private TitledPane transformationsPane;
 
     @FXML
     private TableView<LoadedModel> tableView;
-    @FXML
-    private SplitPane splitPane;
 
     @FXML
     private TableColumn<LoadedModel, String> modelPath;
@@ -53,7 +54,7 @@ public class GuiController {
 
 
     private Model mesh = null;
-    private LoadedModel loadedModel = null;
+    private Scene scene = null;
 
     private Camera camera = new Camera(
             new Vector3f(0, 0, 100),
@@ -65,8 +66,8 @@ public class GuiController {
     @FXML
     private void initialize() {
 
+        scene = new Scene();
 
-        //creates table
         modelPath.setCellValueFactory(new PropertyValueFactory<>("modelName"));
         isActive.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getActivationCheckbox()));
         isEditable.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getIsEditable()));
@@ -87,22 +88,27 @@ public class GuiController {
         });
 
 
-        anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
-        anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
+        //anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> imageView.setWidth(newValue.doubleValue()));
+        //anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> imageView.setHeight(newValue.doubleValue()));
 
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
 
         KeyFrame frame = new KeyFrame(Duration.millis(15), event -> {
-            double width = canvas.getWidth();
-            double height = canvas.getHeight();
+            int width = (int)imageView.getBoundsInParent().getWidth();
+            int height = (int)imageView.getBoundsInParent().getHeight();
 
-            canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
+            IntBuffer buffer = IntBuffer.allocate(width * height);
+            int[] pixels = buffer.array();
+            PixelBuffer<IntBuffer> pixelBuffer = new PixelBuffer<>(width, height, buffer, PixelFormat.getIntArgbPreInstance());
+            WritableImage image = new WritableImage(pixelBuffer);
+
+            imageView.setImage(image);
             camera.setAspectRatio((float) (width / height));
 
             if (mesh != null) {
                 try {
-                    RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) width, (int) height);
+                    RenderEngine.renderScene(pixels, (int) imageView.getBoundsInParent().getWidth(), (int) imageView.getBoundsInParent().getWidth(), camera, scene);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -123,7 +129,7 @@ public class GuiController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
         fileChooser.setInitialDirectory(new File("./3DModels"));
-        File file = fileChooser.showOpenDialog((Stage) canvas.getScene().getWindow());
+        File file = fileChooser.showOpenDialog((Stage) imageView.getScene().getWindow());
         if (file == null) {
             return;
         }
@@ -132,13 +138,14 @@ public class GuiController {
         try {
             String fileContent = Files.readString(fileName);
             mesh = ObjReader.read(fileContent);
-            loadedModel.setModelPath(fileName.toString());
-            loadedModel.setIsActive(new CheckBox());
-            loadedModel.setIsEditable(new CheckBox());
+            LoadedModel newModel = new LoadedModel(new ModelTriangulated(mesh), "name");
+            newModel.setModelPath(fileName.toString());
+            newModel.setIsActive(new CheckBox());
+            newModel.setIsEditable(new CheckBox());
             // Update the existing ObservableList
             final ObservableList<LoadedModel> data = tableView.getItems();
-            data.add(loadedModel); // Assuming Models has a constructor
-
+            data.add(newModel); // Assuming Models has a constructor
+            scene.addModel(newModel);
             tableView.setItems(data);
         } catch (IOException exception) {
             System.out.println("Wrong arguments");
@@ -146,12 +153,12 @@ public class GuiController {
     }
 
     @FXML
-    private void onClickShowHide(){
+    private void onClickShowHide() {
         transformationsPane.setVisible(!transformationsPane.isVisible());
     }
 
     @FXML
-    private void onClickShowHideModels(){
+    private void onClickShowHideModels() {
         tableView.setVisible(!tableView.isVisible());
     }
 

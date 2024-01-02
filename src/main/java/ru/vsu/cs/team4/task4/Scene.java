@@ -12,6 +12,10 @@ public class Scene {
         this.models = new ArrayList<>();
     }
 
+    public void addModel(LoadedModel loadedModel){
+        models.add(loadedModel);
+    }
+
     public List<LoadedModel> getModels() {
         return models;
     }

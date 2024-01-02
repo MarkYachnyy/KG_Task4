@@ -1,6 +1,6 @@
-package ru.vsu.cs.team4.task4.affineTransformation;
+package ru.vsu.cs.team4.task4.Affine;
 
-import ru.vsu.cs.team4.task4.affineTransformation.affineComposite.*;
+import ru.vsu.cs.team4.task4.Affine.affineComposite.*;
 
 public class AffineBuilder {
     private Affine affine;
