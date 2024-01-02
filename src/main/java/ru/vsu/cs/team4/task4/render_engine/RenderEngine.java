@@ -1,5 +1,6 @@
 package ru.vsu.cs.team4.task4.render_engine;
 
+import ru.vsu.cs.team4.task4.Affine.affineComposite.Scale;
 import ru.vsu.cs.team4.task4.LoadedModel;
 import ru.vsu.cs.team4.task4.Scene;
 import ru.vsu.cs.team4.task4.math.Point2f;
@@ -12,6 +13,7 @@ import ru.vsu.cs.team4.task4.rasterization.ZBufferPixelWriter;
 import ru.vsu.cs.team4.task4.rasterization.Rasterization;
 
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class RenderEngine {
     private static void renderModel(final int[] buffer, int width, int height,
@@ -32,9 +34,9 @@ public class RenderEngine {
             Vector2f vt3 = mesh.getTextureVertices().get(polygon.getTextureVertexIndices().get(2));
 
             ZBufferPixelWriter pixelWriter = (x, y, z, color) -> {
-                System.out.println("rasterizing at" + x + " " + y);
-                if(x < 1500 && y < 850){
-                    if(z < Z[x][y]){
+                System.out.println("rasterizing at " + x + " " + y);
+                if(x < width && y < height && x > 0 && y > 0){
+                    if(/*z < Z[x][y]*/true){
                         Z[x][y] = z;
                         buffer[width + height * y] = color;
                     }
@@ -54,8 +56,8 @@ public class RenderEngine {
         Matrix4f viewMatrix = GraphicConveyor.lookAt(camera.getPosition(), camera.getTarget());
         Matrix4f projectionMatrix = GraphicConveyor.perspective(camera.getFov(), camera.getAspectRatio(), camera.getNearPlane(), camera.getFarPlane());
         Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix.getValues());
-        modelViewProjectionMatrix.mul(viewMatrix);
-        modelViewProjectionMatrix.mul(modelMatrix);
+        modelViewProjectionMatrix.mulMut(viewMatrix);
+        modelViewProjectionMatrix.mulMut(modelMatrix);
 
         float[][] Z = new float[width][height];
         for (float[] row : Z) {

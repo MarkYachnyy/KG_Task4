@@ -50,10 +50,10 @@ public class GraphicConveyor {
     }
 
     public static Vector3f multiplyMVPMatrixByVertex(final Matrix4f matrix, final Vector3f vertex) {
-        final float x = (vertex.getX() * matrix.get(0,0)) + (vertex.getY() * matrix.get(1,0)) + (vertex.getZ() * matrix.get(2,0)) + matrix.get(3,0);
-        final float y = (vertex.getX() * matrix.get(0,1)) + (vertex.getY() * matrix.get(1,1)) + (vertex.getZ() * matrix.get(2,1)) + matrix.get(3,1);
-        final float z = (vertex.getX() * matrix.get(0,2)) + (vertex.getY() * matrix.get(1,2)) + (vertex.getZ() * matrix.get(2,2)) + matrix.get(3,2);
-        final float w = (vertex.getX() * matrix.get(0,3)) + (vertex.getY() * matrix.get(1,3)) + (vertex.getZ() * matrix.get(2,3)) + matrix.get(3,3);
+        final float x = (vertex.getX() * matrix.get(0,0)) + (vertex.getY() * matrix.get(0,1)) + (vertex.getZ() * matrix.get(0,2)) + matrix.get(0,3);
+        final float y = (vertex.getX() * matrix.get(1,1)) + (vertex.getY() * matrix.get(1,1)) + (vertex.getZ() * matrix.get(1,2)) + matrix.get(1,3);
+        final float z = (vertex.getX() * matrix.get(2,2)) + (vertex.getY() * matrix.get(2,  1)) + (vertex.getZ() * matrix.get(2,2)) + matrix.get(2,3);
+        final float w = (vertex.getX() * matrix.get(3,3)) + (vertex.getY() * matrix.get(3,1)) + (vertex.getZ() * matrix.get(3,2)) + matrix.get(3,3);
         return new Vector3f(x / w, y / w, z / w);
     }
 

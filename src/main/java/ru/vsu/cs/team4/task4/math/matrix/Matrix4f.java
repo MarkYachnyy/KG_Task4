@@ -2,6 +2,8 @@ package ru.vsu.cs.team4.task4.math.matrix;
 
 import ru.vsu.cs.team4.task4.math.vector.Vector4f;
 
+import java.util.Arrays;
+
 public class Matrix4f implements Matrix<Matrix4f>{
 
     private static final int LENGTH = 16;
@@ -198,4 +200,12 @@ public class Matrix4f implements Matrix<Matrix4f>{
         return matrix;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder res = new StringBuilder();
+        for (float[] f: this.getValues()){
+            res.append(Arrays.toString(f)).append('\n');
+        }
+        return res.toString();
+    }
 }

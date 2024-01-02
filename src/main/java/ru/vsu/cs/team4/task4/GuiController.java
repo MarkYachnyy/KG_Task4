@@ -24,9 +24,11 @@ import ru.vsu.cs.team4.task4.render_engine.RenderEngine;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 public class GuiController {
     final private float TRANSLATION = 0.5F;
@@ -94,16 +96,14 @@ public class GuiController {
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
 
-        KeyFrame frame = new KeyFrame(Duration.millis(15), event -> {
-            int width = (int)imageView.getBoundsInParent().getWidth();
-            int height = (int)imageView.getBoundsInParent().getHeight();
+        KeyFrame frame = new KeyFrame(Duration.millis(1000), event -> {
+            int width = 1600;//(int)imageView.getBoundsInParent().getWidth();
+            int height = 900;//(int)imageView.getBoundsInParent().getHeight();
 
             IntBuffer buffer = IntBuffer.allocate(width * height);
             int[] pixels = buffer.array();
             PixelBuffer<IntBuffer> pixelBuffer = new PixelBuffer<>(width, height, buffer, PixelFormat.getIntArgbPreInstance());
-            WritableImage image = new WritableImage(pixelBuffer);
 
-            imageView.setImage(image);
             camera.setAspectRatio((float) (width / height));
 
             if (mesh != null) {
@@ -113,6 +113,10 @@ public class GuiController {
                     e.printStackTrace();
                 }
             }
+
+            pixelBuffer.updateBuffer(c -> null);
+            WritableImage image = new WritableImage(pixelBuffer);
+            imageView.setImage(image);
         });
 
         timeline.getKeyFrames().add(frame);
