@@ -1,6 +1,5 @@
 package ru.vsu.cs.team4.task4.render_engine;
 
-import ru.vsu.cs.team4.task4.Affine.affineComposite.Scale;
 import ru.vsu.cs.team4.task4.LoadedModel;
 import ru.vsu.cs.team4.task4.Scene;
 import ru.vsu.cs.team4.task4.math.Point2f;
@@ -13,12 +12,11 @@ import ru.vsu.cs.team4.task4.rasterization.ZBufferPixelWriter;
 import ru.vsu.cs.team4.task4.rasterization.Rasterization;
 
 import java.util.Arrays;
-import java.util.Scanner;
 
 public class RenderEngine {
     private static void renderModel(final int[] buffer, int width, int height,
                                     final Matrix4f modelViewProjectionMatrix,
-                                    final ModelTriangulated mesh, int[][] textureARGB, float[][] Z) {
+                                    final ModelTriangulated mesh, int[][] textureARGB, float[][] Z, Vector3f light) {
 
         for (Polygon polygon : mesh.getPolygons()) {
             Vector3f v1 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, mesh.getVertices().get(polygon.getVertexIndices().get(0)));
@@ -33,6 +31,10 @@ public class RenderEngine {
             Vector2f vt2 = mesh.getTextureVertices().get(polygon.getTextureVertexIndices().get(1));
             Vector2f vt3 = mesh.getTextureVertices().get(polygon.getTextureVertexIndices().get(2));
 
+            Vector3f n1 = mesh.getNormals().get(polygon.getNormalIndices().get(0));
+            Vector3f n2 = mesh.getNormals().get(polygon.getNormalIndices().get(1));
+            Vector3f n3 = mesh.getNormals().get(polygon.getNormalIndices().get(2));
+
             ZBufferPixelWriter pixelWriter = (x, y, z, color) -> {
                 if(x < width && y < height && x > 0 && y > 0){
                     Z[x][y] = z;
@@ -40,8 +42,8 @@ public class RenderEngine {
                 }
             };
 
-            Rasterization.fillTriangle(pixelWriter, p1.getX(), p1.getY(), v1.getZ(), p2.getX(), p2.getY(), v2.getZ(), p3.getX(), p3.getY(), v3.getZ(),
-                    vt1.getX(), vt1.getY(), vt2.getX(), vt2.getY(), vt3.getX(), vt3.getY(), textureARGB);
+            Rasterization.fillPolygon(pixelWriter, p1.getX(), p1.getY(), v1.getZ(), p2.getX(), p2.getY(), v2.getZ(), p3.getX(), p3.getY(), v3.getZ(),
+                    vt1.getX(), vt1.getY(), vt2.getX(), vt2.getY(), vt3.getX(), vt3.getY(),  n1, n2,n3,light, 0.5f, textureARGB);
         }
     }
 
@@ -49,7 +51,8 @@ public class RenderEngine {
     public static void renderScene(final int[] buffer, int width, int height,
                                    final Camera camera,
                                    final Scene scene) throws Exception {
-        Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(new Vector3f(0.05f, 0.05f, 0.05f), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
+        float SCALE = 1;
+        Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(new Vector3f(SCALE, SCALE, SCALE), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
         Matrix4f viewMatrix = GraphicConveyor.lookAt(camera.getPosition(), camera.getTarget());
         Matrix4f projectionMatrix = GraphicConveyor.perspective(camera.getFov(), camera.getAspectRatio(), camera.getNearPlane(), camera.getFarPlane());
         Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix.getValues());
@@ -63,7 +66,7 @@ public class RenderEngine {
 
         for (LoadedModel loadedModel : scene.getModels()) {
             if (loadedModel.isActive()) {
-                renderModel(buffer, width, height, modelViewProjectionMatrix, loadedModel.getModel(), loadedModel.getTextureARGB(), Z);
+                renderModel(buffer, width, height, modelViewProjectionMatrix, loadedModel.getModel(), loadedModel.getTextureARGB(), Z, scene.getLight());
             }
         }
     }

@@ -6,19 +6,27 @@ import javafx.animation.Timeline;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.*;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import ru.vsu.cs.team4.task4.Affine.affineComposite.RotateZ;
+import ru.vsu.cs.team4.task4.math.matrix.Matrix3f;
 import ru.vsu.cs.team4.task4.math.vector.Vector2f;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
+import ru.vsu.cs.team4.task4.math.vector.Vector4f;
 import ru.vsu.cs.team4.task4.model.Model;
 import ru.vsu.cs.team4.task4.model.ModelTriangulated;
+import ru.vsu.cs.team4.task4.model.NormalCalculator;
+import ru.vsu.cs.team4.task4.model.Polygon;
 import ru.vsu.cs.team4.task4.objio.ObjReader;
 import ru.vsu.cs.team4.task4.render_engine.Camera;
 import ru.vsu.cs.team4.task4.render_engine.RenderEngine;
@@ -30,7 +38,9 @@ import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class GuiController {
     final private float TRANSLATION = 0.5F;
@@ -61,7 +71,7 @@ public class GuiController {
     private Scene scene = null;
 
     private Camera camera = new Camera(
-            new Vector3f(0, 0, 100),
+            new Vector3f(0, 100, 100),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
 
@@ -91,6 +101,28 @@ public class GuiController {
             }
         });
 
+        imageView.setOnMouseDragged(new EventHandler<MouseEvent>() {
+            float xo = 800;
+            int yo;
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                float x = (float) mouseEvent.getX();
+                camera.setPosition(new Vector3f(camera.getPosition().getX() + x - xo, camera.getPosition().getY(), camera.getPosition().getZ()));
+                xo = x;
+            }
+        });
+
+        imageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                if(mouseEvent.getButton() == MouseButton.FORWARD){
+                    camera.setPosition(new Vector3f(camera.getPosition().getX() * 0.9f, camera.getPosition().getY() * 0.9f, camera.getPosition().getZ() * 0.9f));
+                } else if(mouseEvent.getButton() == MouseButton.BACK){
+                    camera.setPosition(new Vector3f(camera.getPosition().getX() * 1.1f, camera.getPosition().getY() * 1.1f, camera.getPosition().getZ() * 1.1f));
+                }
+            }
+        });
+
 
         //anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> imageView.setWidth(newValue.doubleValue()));
         //anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> imageView.setHeight(newValue.doubleValue()));
@@ -98,15 +130,15 @@ public class GuiController {
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
 
-        KeyFrame frame = new KeyFrame(Duration.millis(1000), event -> {
-            int width = (int)imageView.getBoundsInParent().getWidth();
-            int height = (int)imageView.getBoundsInParent().getHeight();
+        KeyFrame frame = new KeyFrame(Duration.millis(33), event -> {
+            int width = (int) imageView.getBoundsInParent().getWidth();
+            int height = (int) imageView.getBoundsInParent().getHeight();
 
             IntBuffer buffer = IntBuffer.allocate(width * height);
             int[] pixels = buffer.array();
             PixelBuffer<IntBuffer> pixelBuffer = new PixelBuffer<>(width, height, buffer, PixelFormat.getIntArgbPreInstance());
 
-            camera.setAspectRatio((float) (width/height));
+            camera.setAspectRatio((float) (width / height));
 
             if (mesh != null) {
                 try {
@@ -144,14 +176,19 @@ public class GuiController {
         try {
             String fileContent = Files.readString(fileName);
             mesh = ObjReader.read(fileContent);
-            for (Vector2f tv: mesh.getTextureVertices()){
-                if(Math.abs(tv.getX() - 1) < 1E-5){
+            for (Vector2f tv : mesh.getTextureVertices()) {
+                if (Math.abs(tv.getX() - 1) < 1E-5) {
                     tv.setX(0.9999f);
                 }
-                if(Math.abs(tv.getY() - 1) < 1E-5){
+                if (Math.abs(tv.getY() - 1) < 1E-5) {
                     tv.setY(0.9999f);
                 }
             }
+            List<Vector3f> normals = NormalCalculator.recalculateNormals(mesh.getVertices(), mesh.getPolygons());
+            for (Polygon polygon : mesh.getPolygons()) {
+                polygon.setNormalIndices(new ArrayList<>(polygon.getVertexIndices()));
+            }
+            mesh.setNormals(normals);
             LoadedModel newModel = new LoadedModel(new ModelTriangulated(mesh), "name");
             newModel.setModelPath(fileName.toString());
             newModel.setIsActive(new CheckBox());
