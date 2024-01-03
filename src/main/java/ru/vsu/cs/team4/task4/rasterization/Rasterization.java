@@ -7,6 +7,12 @@ public class Rasterization {
     public static void fillPolygon(ZBufferPixelWriter pixelWriter, int x1, int y1, float z1, int x2, int y2, float z2, int x3, int y3, float z3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3,
                                    Vector3f n1, Vector3f n2, Vector3f n3, Vector3f light, float ambient, int[][] textureARGB) {
 
+        float A = (y2 - y1) * (z3 - z1) - (y3 - y1) * (z2 - z1);
+        float B = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
+        float C = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
+        float D = -A * x1 - B * y1 - C * z1;
+
+
         if (y1 > y2) {
             int t = y1;
             y1 = y2;
@@ -166,10 +172,18 @@ public class Rasterization {
         for (int y0 = y1; y0 < y2; y0++) {
 
             if (steepL) {
-                float tx = tx1 * (yL - y0) / dyL + txL * (y0 - y1) / dyL;
-                float ty = ty1 * (yL - y0) / dyL + tyL * (y0 - y1) / dyL;
-                float z = z1 * (yL - y0) / dyL + zL * (y0 - y1) / dyL;
-                pixelWriter.setRGB(xcL, y0, z, textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)]);
+                float k1 = 1f * (yL - y0) / dyL;
+                float kL = 1f * (y0 - y1) / dyL;
+                float tx = tx1 * k1 + txL * kL;
+                float ty = ty1 * k1 + tyL * kL;
+                float z = z1 * k1 + zL * kL;
+                Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(nL, -kL)).normalized();
+                float dp = normal.dotProduct(light);
+                if (dp < 0) dp = 0;
+                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tWidth)];
+                float k = ambient + dp * (1 - ambient);
+
+                pixelWriter.setRGB(xcL, y0, z, fadeColorARGB(color, k));
 
                 from = xcL + 1;
                 faultL_num += 2 * dxL;
@@ -186,10 +200,20 @@ public class Rasterization {
             }
 
             if (steepR) {
-                float tx = tx1 * (yR - y0) / dyR + txR * (y0 - y1) / dyR;
-                float ty = ty1 * (yR - y0) / dyR + tyR * (y0 - y1) / dyR;
-                float z = z1 * (yR - y0) / dyR + zR * (y0 - y1) / dyR;
-                pixelWriter.setRGB(xcR, y0, z, textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)]);
+                float k1 = 1f * (yR - y0) / dyR;
+                float kR = 1f * (y0 - y1) / dyR;
+
+                float tx = tx1 * k1 + txR * kR;
+                float ty = ty1 * k1 + tyR * kR;
+                float z = z1 * k1 + zR * kR;
+
+                Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(nR, -kR)).normalized();
+                float dp = normal.dotProduct(light);
+                if (dp < 0) dp = 0;
+                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tWidth)];
+                float k = ambient + dp * (1 - ambient);
+
+                pixelWriter.setRGB(xcR, y0, z, fadeColorARGB(color, k));
                 to = xcR - 1;
                 faultR_num += 2 * dxR;
                 if (faultR_num >= faultR_denom) {
@@ -204,7 +228,7 @@ public class Rasterization {
                 to = Math.min(xcR, xcR - xToMove * dxR_sign - 1);
             }
 
-            drawLineWithInterpolation(pixelWriter, x1, x2, x3, y1, y2, y3, z1, z2, z3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, textureARGB, n1, n2, n3, light, ambient);
+            drawLineWithInterpolation(A, B, C, D, pixelWriter, x1, x2, x3, y1, y2, y3, z1, z2, z3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, textureARGB, n1, n2, n3, light, ambient);
         }
 
         //ОБРАБОТКА ПОСЛЕДНЕЙ ИТЕРАЦИИ ВЕРХНЕЙ ПОЛОВИНЫ
@@ -273,10 +297,20 @@ public class Rasterization {
 
         for (int y0 = y2; y0 < y3; y0++) {
             if (steepL) {
-                float tx = tx3 * (y0 - yL) / dyL + txL * (y3 - y0) / dyL;
-                float ty = ty3 * (y0 - yL) / dyL + tyL * (y3 - y0) / dyL;
-                float z = z3 * (y0 - yL) / dyL + zL * (y3 - y0) / dyL;
-                pixelWriter.setRGB(xcL, y0, z, textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)]);
+                float k3 = 1f * (y0 - yL) / dyL;
+                float kL = 1f * (y3 - y0) / dyL;
+
+                float tx = tx3 * k3 + txL * kL;
+                float ty = ty3 * k3 + tyL * kL;
+                float z = z3 * k3 + zL * kL;
+
+                Vector3f normal = Vector3f.sum(Vector3f.mul(n3, -k3), Vector3f.mul(nL, -kL)).normalized();
+                float dp = normal.dotProduct(light);
+                if (dp < 0) dp = 0;
+                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tWidth)];
+                float k = ambient + dp * (1 - ambient);
+
+                pixelWriter.setRGB(xcL, y0, z, fadeColorARGB(color, k));
 
                 from = xcL + 1;
                 faultL_num += 2 * dxL;
@@ -294,11 +328,20 @@ public class Rasterization {
             }
 
             if (steepR) {
+                float k3 = 1f * (y0 - yR) / dyR;
+                float kR = 1f * (y3 - y0) / dyR;
 
-                float tx = tx3 * (y0 - yR) / dyR + txR * (y3 - y0) / dyR;
-                float ty = ty3 * (y0 - yR) / dyR + tyR * (y3 - y0) / dyR;
-                float z = z3 * (y0 - yL) / dyL + zR * (y3 - y0) / dyL;
-                pixelWriter.setRGB(xcR, y0, z, textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)]);
+                float tx = tx3 * k3 + txR * kR;
+                float ty = ty3 * k3 + tyR * kR;
+                float z = z3 * k3 + zR * kR;
+
+                Vector3f normal = Vector3f.sum(Vector3f.mul(n3, -k3), Vector3f.mul(nR, -kR)).normalized();
+                float dp = normal.dotProduct(light);
+                if (dp < 0) dp = 0;
+                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tWidth)];
+                float k = ambient + dp * (1 - ambient);
+
+                pixelWriter.setRGB(xcR, y0, z, fadeColorARGB(color, k));
 
                 to = xcR - 1;
                 faultR_num += 2 * dxR;
@@ -314,7 +357,7 @@ public class Rasterization {
                 to = Math.min(xcR, xcR - xToMove * dxR_sign - 1);
             }
 
-            drawLineWithInterpolation(pixelWriter, x1, x2, x3, y1, y2, y3, z1, z2, z3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, textureARGB, n1, n2, n3, light, ambient);
+            drawLineWithInterpolation(A, B, C, D, pixelWriter, x1, x2, x3, y1, y2, y3, z1, z2, z3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, textureARGB, n1, n2, n3, light, ambient);
         }
 
         //ОБРАБОТКА ПОСЛЕДНЕЙ ИТЕРАЦИИ ПОСЛЕДНЕЙ ПОЛОВИНЫ
@@ -345,7 +388,7 @@ public class Rasterization {
 
             Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(n2, -k2)).normalized();
             float dp = normal.dotProduct(light);
-            if(dp < 0) dp = 0;
+            if (dp < 0) dp = 0;
             int color = texture[(int) (tx * width)][(int) (ty * height)];
             float k = ambient + dp * (1 - ambient);
 
@@ -356,7 +399,7 @@ public class Rasterization {
         }
     }
 
-    private static void drawLineWithInterpolation(ZBufferPixelWriter pixelWriter, int x1, int x2, int x3, int y1, int y2, int y3, float z1, float z2, float z3,
+    private static void drawLineWithInterpolation(float A, float B, float C, float D, ZBufferPixelWriter pixelWriter, int x1, int x2, int x3, int y1, int y2, int y3, float z1, float z2, float z3,
                                                   float tx1, float ty1, float tx2, float ty2, float tx3, float ty3,
                                                   int yc, int from, int to, int[][] texture, Vector3f n1, Vector3f n2, Vector3f n3, Vector3f light, float ambient) {
 
@@ -379,11 +422,11 @@ public class Rasterization {
 
             float tx = tx1 * k1 + tx2 * k2 + tx3 * k3;
             float ty = ty1 * k1 + ty2 * k2 + ty3 * k3;
-            float z = z1 * k1 + z2 * k2 + z3 * k3;
+            float z = -(A * x0 + B * yc + D) / C;
 
             Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(n2, -k2)).add(Vector3f.mul(n3, -k3)).normalized();
             float dp = normal.dotProduct(light);
-            if(dp < 0) dp = 0;
+            if (dp < 0) dp = 0;
             int color = texture[(int) (tx * width)][(int) (ty * height)];
             float k = ambient + dp * (1 - ambient);
 
