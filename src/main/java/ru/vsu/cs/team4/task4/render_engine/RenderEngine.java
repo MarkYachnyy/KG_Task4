@@ -34,12 +34,9 @@ public class RenderEngine {
             Vector2f vt3 = mesh.getTextureVertices().get(polygon.getTextureVertexIndices().get(2));
 
             ZBufferPixelWriter pixelWriter = (x, y, z, color) -> {
-                System.out.println("rasterizing at " + x + " " + y);
                 if(x < width && y < height && x > 0 && y > 0){
-                    if(/*z < Z[x][y]*/true){
-                        Z[x][y] = z;
-                        buffer[width + height * y] = color;
-                    }
+                    Z[x][y] = z;
+                    buffer[x + width * y] = color;
                 }
             };
 
@@ -52,7 +49,7 @@ public class RenderEngine {
     public static void renderScene(final int[] buffer, int width, int height,
                                    final Camera camera,
                                    final Scene scene) throws Exception {
-        Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(new Vector3f(1, 1, 1), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
+        Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(new Vector3f(0.05f, 0.05f, 0.05f), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
         Matrix4f viewMatrix = GraphicConveyor.lookAt(camera.getPosition(), camera.getTarget());
         Matrix4f projectionMatrix = GraphicConveyor.perspective(camera.getFov(), camera.getAspectRatio(), camera.getNearPlane(), camera.getFarPlane());
         Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix.getValues());

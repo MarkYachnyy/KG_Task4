@@ -15,6 +15,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import ru.vsu.cs.team4.task4.math.vector.Vector2f;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 import ru.vsu.cs.team4.task4.model.Model;
 import ru.vsu.cs.team4.task4.model.ModelTriangulated;
@@ -22,6 +23,7 @@ import ru.vsu.cs.team4.task4.objio.ObjReader;
 import ru.vsu.cs.team4.task4.render_engine.Camera;
 import ru.vsu.cs.team4.task4.render_engine.RenderEngine;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -97,18 +99,18 @@ public class GuiController {
         timeline.setCycleCount(Animation.INDEFINITE);
 
         KeyFrame frame = new KeyFrame(Duration.millis(1000), event -> {
-            int width = 1600;//(int)imageView.getBoundsInParent().getWidth();
-            int height = 900;//(int)imageView.getBoundsInParent().getHeight();
+            int width = (int)imageView.getBoundsInParent().getWidth();
+            int height = (int)imageView.getBoundsInParent().getHeight();
 
             IntBuffer buffer = IntBuffer.allocate(width * height);
             int[] pixels = buffer.array();
             PixelBuffer<IntBuffer> pixelBuffer = new PixelBuffer<>(width, height, buffer, PixelFormat.getIntArgbPreInstance());
 
-            camera.setAspectRatio((float) (width / height));
+            camera.setAspectRatio((float) (width/height));
 
             if (mesh != null) {
                 try {
-                    RenderEngine.renderScene(pixels, (int) imageView.getBoundsInParent().getWidth(), (int) imageView.getBoundsInParent().getWidth(), camera, scene);
+                    RenderEngine.renderScene(pixels, width, height, camera, scene);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -142,6 +144,14 @@ public class GuiController {
         try {
             String fileContent = Files.readString(fileName);
             mesh = ObjReader.read(fileContent);
+            for (Vector2f tv: mesh.getTextureVertices()){
+                if(Math.abs(tv.getX() - 1) < 1E-5){
+                    tv.setX(0.9999f);
+                }
+                if(Math.abs(tv.getY() - 1) < 1E-5){
+                    tv.setY(0.9999f);
+                }
+            }
             LoadedModel newModel = new LoadedModel(new ModelTriangulated(mesh), "name");
             newModel.setModelPath(fileName.toString());
             newModel.setIsActive(new CheckBox());
