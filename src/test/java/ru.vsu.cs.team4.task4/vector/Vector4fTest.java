@@ -13,7 +13,7 @@ public class Vector4fTest {
     void testSumVectors() {
         Vector4f v = new Vector4f(2.0f, 3.0f, -1.0f, 5.0f);
         Vector4f v1 = new Vector4f(3.0f, -4.0f, 0.0f, -1.0f);
-        v.sum(v1);
+        v.add(v1);
         assertTrue(Utils.equals(v, new Vector4f(5.0f, -1.0f, -1.0f, 4.0f)));
     }
 
@@ -29,7 +29,7 @@ public class Vector4fTest {
     @Test
     void testSumWithValue() {
         Vector4f v = new Vector4f(-1.0f, 0.0f, -3.0f, 7.0f);
-        v.sum(5.0f);
+        v.add(5.0f);
         assertTrue(Utils.equals(v, new Vector4f(4.0f, 5.0f, 2.0f, 12.0f)));
     }
 
@@ -108,14 +108,14 @@ public class Vector4fTest {
     @Test
     void testNormalize() {
         Vector4f v = new Vector4f(4.0f, -4.0f, 2.0f, -8.0f);
-        v.normalize();
+        v.normalized();
         assertTrue(Utils.equals(v, new Vector4f(0.4f, -0.4f, 0.2f, -0.8f)));
     }
 
     @Test
     void testNormalizedVectorLength() {
         Vector4f v = new Vector4f(1.0f, 1.0f, 7.0f, 0.0f);
-        v.normalize();
+        v.normalized();
         assertTrue(Utils.epsEquals(1.0f, v.len()));
     }
 
@@ -123,6 +123,6 @@ public class Vector4fTest {
     void testScalarMulVectors() {
         Vector4f v = new Vector4f(3.0f, 0.0f, -2.0f, 7.0f);
         Vector4f v1 = new Vector4f(-5.0f, 2.0f, -1.0f, 1.0f);
-        assertTrue(Utils.epsEquals(-6.0f, v.scalarMul(v1)));
+        assertTrue(Utils.epsEquals(-6.0f, v.dotProduct(v1)));
     }
 }

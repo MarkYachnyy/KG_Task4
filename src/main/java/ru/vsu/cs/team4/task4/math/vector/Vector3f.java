@@ -18,6 +18,12 @@ public class Vector3f implements Vector<Vector3f> {
         this.z = 1;
     }
 
+    public Vector3f(Vector4f v) {
+        this.x = v.getX() / v.getW();
+        this.y = v.getY() / v.getW();
+        this.z = v.getZ() / v.getW();
+    }
+
     public Vector3f() {
         this.x = 0;
         this.y = 0;
@@ -156,12 +162,6 @@ public class Vector3f implements Vector<Vector3f> {
         return this.x * v.getX() + this.y * v.getY() + this.z * v.getZ();
     }
 
-    /*public Vector3f vectorMul(Vector3f v2) {
-        float resX = this.getY() * v2.getZ() - this.getZ() * v2.getY();
-        float resY = this.getZ() * v2.getX() - this.getX() * v2.getZ();
-        float resZ = this.getX() * v2.getY() - this.getY() * v2.getX();
-        return new Vector3f(resX, resY, resZ);
-    }*/
 
     public static Vector3f crossProduct(Vector3f v1, Vector3f v2) {
         float resX = v1.y * v2.z - v1.z * v2.y;
