@@ -13,7 +13,7 @@ public class Vector3fTest {
     void testSumVectors() {
         Vector3f v = new Vector3f(2.0f, 3.0f, -1.0f);
         Vector3f v1 = new Vector3f(-3.0f, 0.0f, -4.0f);
-        v.sum(v1);
+        v.add(v1);
         assertTrue(Utils.equals(v, new Vector3f(-1.0f, 3.0f, -5.0f)));
     }
 
@@ -29,7 +29,7 @@ public class Vector3fTest {
     @Test
     void testSumWithValue() {
         Vector3f v = new Vector3f(2.0f, 0.0f, -5.0f);
-        v.sum(4.0f);
+        v.add(4.0f);
         assertTrue(Utils.equals(v, new Vector3f(6.0f, 4.0f, -1.0f)));
     }
 
@@ -52,7 +52,7 @@ public class Vector3fTest {
     void testStaticSubVectors() {
         Vector3f v = new Vector3f(0.0f, -9.0f, 5.0f);
         Vector3f v1 = new Vector3f(2.3f, -7.2f, -12.8f);
-        Vector3f vRes = Vector3f.sub(v, v1);
+        Vector3f vRes = Vector3f.residual(v, v1);
         assertTrue(Utils.equals(vRes, new Vector3f(-2.3f, -1.8f, 17.8f)));
     }
 
@@ -66,7 +66,7 @@ public class Vector3fTest {
     @Test
     void testStaticSubWithValue() {
         Vector3f v = new Vector3f(-2.3f, 0.7f, 9.6f);
-        Vector3f vRes = Vector3f.sub(v, 2.8f);
+        Vector3f vRes = Vector3f.residual(v, 2.8f);
         assertTrue(Utils.equals(vRes, new Vector3f(-5.1f, -2.1f, 6.8f)));
     }
 
@@ -109,14 +109,14 @@ public class Vector3fTest {
     @Test
     void testNormalize() {
         Vector3f v = new Vector3f(6.0f, 8.0f, 0.0f);
-        v.normalize();
+        v.normalized();
         assertTrue(Utils.equals(v, new Vector3f(0.6f, 0.8f, 0.0f)));
     }
 
     @Test
     void testNormalizedVectorLength() {
         Vector3f v = new Vector3f(5.0f, -2.0f, 3.0f);
-        v.normalize();
+        v.normalized();
         assertTrue(Utils.epsEquals(1.0f, v.len()));
     }
 
@@ -124,14 +124,14 @@ public class Vector3fTest {
     void testScalarMulVectors() {
         Vector3f v = new Vector3f(3.0f, 0.0f, 1.0f);
         Vector3f v1 = new Vector3f(-5.0f, 2.0f, 4.0f);
-        assertTrue(Utils.epsEquals(-11.0f, v.scalarMul(v1)));
+        assertTrue(Utils.epsEquals(-11.0f, v.dotProduct(v1)));
     }
 
     @Test
     void testVectorMul() {
         Vector3f v = new Vector3f(1.0f, -2.0f, 4.0f);
         Vector3f v1 = new Vector3f(2.0f, 5.0f, -3.0f);
-        Vector3f vRes = Vector3f.vectorMul(v, v1);
+        Vector3f vRes = Vector3f.crossProduct(v, v1);
         assertTrue(Utils.equals(vRes, new Vector3f(-14.0f, 11.0f, 9.0f)));
     }
 }

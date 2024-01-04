@@ -12,7 +12,7 @@ public class Vector2fTest {
     void testSumVectors() {
         Vector2f v = new Vector2f(2.0f, 3.0f);
         Vector2f v1 = new Vector2f(3.0f, -4.0f);
-        v.sum(v1);
+        v.add(v1);
         assertTrue(Utils.equals(v, new Vector2f(5.0f, -1.0f)));
     }
 
@@ -27,7 +27,7 @@ public class Vector2fTest {
     @Test
     void testSumWithValue() {
         Vector2f v = new Vector2f(-1.0f, 0.0f);
-        v.sum(5.0f);
+        v.add(5.0f);
         assertTrue(Utils.equals(v, new Vector2f(4.0f, 5.0f)));
     }
 
@@ -108,14 +108,14 @@ public class Vector2fTest {
     @Test
     void testNormalize() {
         Vector2f v = new Vector2f(3.0f, -4.0f);
-        v.normalize();
+        v.normalized();
         assertTrue(Utils.equals(v, new Vector2f(0.6f, -0.8f)));
     }
 
     @Test
     void testNormalizedVectorLength() {
         Vector2f v = new Vector2f(5.0f, -2.0f);
-        v.normalize();
+        v.normalized();
         assertTrue(Utils.epsEquals(1.0f, v.len()));
     }
 
@@ -123,6 +123,6 @@ public class Vector2fTest {
     void testScalarMulVectors() {
         Vector2f v = new Vector2f(3.0f, 0.0f);
         Vector2f v1 = new Vector2f(-5.0f, 2.0f);
-        assertTrue(Utils.epsEquals(-15.0f, v.scalarMul(v1)));
+        assertTrue(Utils.epsEquals(-15.0f, v.dotProduct(v1)));
     }
 }
