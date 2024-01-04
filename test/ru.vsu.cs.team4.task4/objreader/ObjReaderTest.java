@@ -1,4 +1,4 @@
-package com.cgvsu.objreader;
+package ru.vsu.cs.team4.task4.objreader;
 
 import com.cgvsu.math.Vector3f;
 import org.junit.jupiter.api.Assertions;

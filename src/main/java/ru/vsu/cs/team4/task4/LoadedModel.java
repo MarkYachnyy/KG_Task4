@@ -27,8 +27,8 @@ public class LoadedModel {
         this.modelPath = modelPath;
         int alpha = 255;
         int red = 255;
-        int green = 0;
-        int blue = 0;
+        int green = 255;
+        int blue = 255;
         int colorARGB = alpha << 24 | red << 16 | green << 8 | blue;
         this.textureARGB = new int[][]{{colorARGB}};
     }

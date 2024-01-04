@@ -1,4 +1,4 @@
-package cgvsu.vector;
+package ru.vsu.cs.team4.task4.vector;
 
 
 import org.junit.jupiter.api.Test;

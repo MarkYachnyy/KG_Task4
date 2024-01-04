@@ -1,24 +1,15 @@
-package cgvsu.AffineTests;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import ru.vsu.cs.team4.task4.Affine.AffineBuilder.AffineBuilder;
-import ru.vsu.cs.team4.task4.Affine.AffineMatrix;
-import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
-import ru.vsu.cs.team4.task4.math.utils.Utils;
-import ru.vsu.cs.team4.task4.math.vector.Vector3f;
-import ru.vsu.cs.team4.task4.model.Model;
+package ru.vsu.cs.team4.task4.AffineTests;
 
 import java.util.ArrayList;
 
 public class TranslationTest {
     public final double DELTA = 10e-15;
 
-
     @Test
     public void affineBuilderTranslateTest1() {
         ArrayList<Vector3f> vertex = new ArrayList<>();
         vertex.add(new Vector3f(-2.0f, 0.0f, 0.1f));
+
 
         Model model = new Model(vertex, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 

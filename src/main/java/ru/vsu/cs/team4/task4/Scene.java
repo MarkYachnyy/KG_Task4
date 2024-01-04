@@ -13,7 +13,7 @@ public class Scene {
 
     public Scene() {
         this.models = new ArrayList<>();
-        this.light = new Vector3f(-1,-1,-1).normalized();
+        this.light = new Vector3f(0,-1,0).normalized();
     }
 
     public void addModel(LoadedModel loadedModel){

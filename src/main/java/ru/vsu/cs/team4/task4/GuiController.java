@@ -71,7 +71,7 @@ public class GuiController {
     private Scene scene = null;
 
     private Camera camera = new Camera(
-            new Vector3f(0, 0, 100),
+            new Vector3f(0, 100, 100),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
 
@@ -130,7 +130,7 @@ public class GuiController {
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
 
-        KeyFrame frame = new KeyFrame(Duration.millis(33), event -> {
+        KeyFrame frame = new KeyFrame(Duration.millis(100), event -> {
             int width = (int) imageView.getBoundsInParent().getWidth();
             int height = (int) imageView.getBoundsInParent().getHeight();
 

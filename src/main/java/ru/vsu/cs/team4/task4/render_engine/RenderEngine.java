@@ -37,8 +37,10 @@ public class RenderEngine {
 
             ZBufferPixelWriter pixelWriter = (x, y, z, color) -> {
                 if(x < width && y < height && x > 0 && y > 0){
-                    Z[x][y] = z;
-                    buffer[x + width * y] = color;
+                    if(z < Z[x][y]){
+                        Z[x][y] = z;
+                        buffer[x + width * y] = color;
+                    }
                 }
             };
 
@@ -51,7 +53,7 @@ public class RenderEngine {
     public static void renderScene(final int[] buffer, int width, int height,
                                    final Camera camera,
                                    final Scene scene) throws Exception {
-        float SCALE = 10f;
+        float SCALE = 1.6f;
         Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(new Vector3f(SCALE, SCALE, SCALE), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
         Matrix4f viewMatrix = GraphicConveyor.lookAt(camera.getPosition(), camera.getTarget());
         Matrix4f projectionMatrix = GraphicConveyor.perspective(camera.getFov(), camera.getAspectRatio(), camera.getNearPlane(), camera.getFarPlane());

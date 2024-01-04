@@ -15,7 +15,7 @@ public class GraphicConveyor {
     }
 
     public static Matrix4f lookAt(Vector3f eye, Vector3f target) {
-        return lookAt(eye, target, new Vector3f(0F, 1.0F, 0F));
+        return lookAt(eye, target, new Vector3f(0F, 1, 0));
     }
 
     public static Matrix4f lookAt(Vector3f eye, Vector3f target, Vector3f up) {
@@ -29,9 +29,9 @@ public class GraphicConveyor {
         resultZ.normalized();
 
         float[][] matrix = new float[][]{
-                {resultX.getX(), resultY.getX(), resultZ.getX(), -resultX.dotProduct(eye)},
-                {resultX.getY(), resultY.getY(), resultZ.getY(), -resultY.dotProduct(eye)},
-                {resultX.getZ(), resultY.getZ(), resultZ.getZ(), -resultZ.dotProduct(eye)},
+                {resultX.getX(), resultX.getY(), resultX.getZ(), -resultX.dotProduct(eye)},
+                {resultY.getX(), resultY.getY(), resultY.getZ(), -resultY.dotProduct(eye)},
+                {resultZ.getX(), resultZ.getY(), resultZ.getZ(), -resultZ.dotProduct(eye)},
                 {0, 0, 0, 1}};
         return new Matrix4f(matrix);
     }

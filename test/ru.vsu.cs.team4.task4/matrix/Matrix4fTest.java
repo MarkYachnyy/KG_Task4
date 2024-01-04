@@ -1,4 +1,4 @@
-package cgvsu.matrix;
+package ru.vsu.cs.team4.task4.matrix;
 
 
 import org.junit.jupiter.api.Test;
