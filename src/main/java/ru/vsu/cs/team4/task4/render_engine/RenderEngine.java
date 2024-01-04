@@ -1,7 +1,7 @@
 package ru.vsu.cs.team4.task4.render_engine;
 
-import ru.vsu.cs.team4.task4.LoadedModel;
-import ru.vsu.cs.team4.task4.Scene;
+import ru.vsu.cs.team4.task4.scene.LoadedModel;
+import ru.vsu.cs.team4.task4.scene.Scene;
 import ru.vsu.cs.team4.task4.math.Point2f;
 import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
 import ru.vsu.cs.team4.task4.math.vector.Vector2f;
@@ -53,7 +53,7 @@ public class RenderEngine {
     public static void renderScene(final int[] buffer, int width, int height,
                                    final Camera camera,
                                    final Scene scene) throws Exception {
-        float SCALE = 1.6f;
+        float SCALE = 1.5f;
         Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(new Vector3f(SCALE, SCALE, SCALE), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
         Matrix4f viewMatrix = GraphicConveyor.lookAt(camera.getPosition(), camera.getTarget());
         Matrix4f projectionMatrix = GraphicConveyor.perspective(camera.getFov(), camera.getAspectRatio(), camera.getNearPlane(), camera.getFarPlane());

@@ -1,4 +1,4 @@
-package ru.vsu.cs.team4.task4;
+package ru.vsu.cs.team4.task4.gui;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -8,7 +8,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.canvas.Canvas;
+import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.*;
@@ -18,11 +18,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import ru.vsu.cs.team4.task4.Affine.affineComposite.RotateZ;
-import ru.vsu.cs.team4.task4.math.matrix.Matrix3f;
+import ru.vsu.cs.team4.task4.affine.affineComposite.RotateCustom;
+import ru.vsu.cs.team4.task4.affine.affineComposite.RotateY;
 import ru.vsu.cs.team4.task4.math.vector.Vector2f;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
-import ru.vsu.cs.team4.task4.math.vector.Vector4f;
 import ru.vsu.cs.team4.task4.model.Model;
 import ru.vsu.cs.team4.task4.model.ModelTriangulated;
 import ru.vsu.cs.team4.task4.model.NormalCalculator;
@@ -30,16 +29,16 @@ import ru.vsu.cs.team4.task4.model.Polygon;
 import ru.vsu.cs.team4.task4.objio.ObjReader;
 import ru.vsu.cs.team4.task4.render_engine.Camera;
 import ru.vsu.cs.team4.task4.render_engine.RenderEngine;
+import ru.vsu.cs.team4.task4.scene.LoadedModel;
+import ru.vsu.cs.team4.task4.scene.Scene;
 
-import java.awt.image.BufferedImage;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class GuiController {
@@ -69,6 +68,9 @@ public class GuiController {
 
     private Model mesh = null;
     private Scene scene = null;
+
+    private Point2D mousePos;
+
 
     private Camera camera = new Camera(
             new Vector3f(0, 100, 100),
@@ -102,25 +104,23 @@ public class GuiController {
         });
 
         imageView.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            float xo = 800;
-            int yo;
+
             @Override
             public void handle(MouseEvent mouseEvent) {
-                float x = (float) mouseEvent.getX();
-                camera.setPosition(new Vector3f(camera.getPosition().getX() + x - xo, camera.getPosition().getY(), camera.getPosition().getZ()));
-                xo = x;
+                float dx = (float) mouseEvent.getX() - (float) mousePos.getX();
+                float dy = (float) mouseEvent.getY() - (float) mousePos.getY();
+                float thetaY = dx / 500;
+                float theta2 = dy / 250;
+                RotateCustom rotateCustom = new RotateCustom(new Vector3f(-camera.getPosition().getZ(), 0, camera.getPosition().getX()), theta2);
+                RotateY rotateY = new RotateY(thetaY);
+                Vector3f new_pos = rotateY.getMatrix3f().mul(rotateCustom.getMatrix3f()).mulV(camera.getPosition());
+                camera.setPosition(new_pos);
+                mousePos = new Point2D((float) mouseEvent.getX(), (float) mouseEvent.getY());
             }
         });
 
-        imageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                if(mouseEvent.getButton() == MouseButton.FORWARD){
-                    camera.setPosition(new Vector3f(camera.getPosition().getX() * 0.9f, camera.getPosition().getY() * 0.9f, camera.getPosition().getZ() * 0.9f));
-                } else if(mouseEvent.getButton() == MouseButton.BACK){
-                    camera.setPosition(new Vector3f(camera.getPosition().getX() * 1.1f, camera.getPosition().getY() * 1.1f, camera.getPosition().getZ() * 1.1f));
-                }
-            }
+        imageView.setOnMousePressed(e -> {
+            mousePos = new Point2D(e.getX(), e.getY());
         });
 
 

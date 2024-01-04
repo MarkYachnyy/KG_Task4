@@ -1,4 +1,4 @@
-package ru.vsu.cs.team4.task4;
+package ru.vsu.cs.team4.task4.scene;
 
 
 import javafx.scene.control.CheckBox;

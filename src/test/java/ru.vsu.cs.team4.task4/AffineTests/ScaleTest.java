@@ -2,9 +2,8 @@ package ru.vsu.cs.team4.task4.AffineTests;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
-import ru.vsu.cs.team4.task4.Affine.AffineBuilder;
-import ru.vsu.cs.team4.task4.Affine.affineComposite.Affine;
+import ru.vsu.cs.team4.task4.affine.AffineBuilder;
+import ru.vsu.cs.team4.task4.affine.affineComposite.Affine;
 import ru.vsu.cs.team4.task4.math.utils.Utils;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 import ru.vsu.cs.team4.task4.math.vector.Vector4f;

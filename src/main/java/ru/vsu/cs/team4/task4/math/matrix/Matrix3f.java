@@ -33,6 +33,10 @@ public class Matrix3f implements Matrix<Matrix3f> {
 
     public void setValues(float[][] values) {this.values = arrFromMatrix(values).clone();}
 
+    public void set(int i, int j, float val){
+        this.values[i * 3 + j] = val;
+    }
+
 
     @Override
     public Matrix3f sum(Matrix3f m) {

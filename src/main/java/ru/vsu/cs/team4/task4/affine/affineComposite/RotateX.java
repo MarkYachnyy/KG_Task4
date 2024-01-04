@@ -1,6 +1,7 @@
-package ru.vsu.cs.team4.task4.Affine.affineComposite;
+package ru.vsu.cs.team4.task4.affine.affineComposite;
 
 
+import ru.vsu.cs.team4.task4.math.matrix.Matrix3f;
 import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
 
 public class RotateX implements AffineComposite {
@@ -18,4 +19,5 @@ public class RotateX implements AffineComposite {
     public Matrix4f getMatrix() {
         return rotationMatrix;
     }
+
 }

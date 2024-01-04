@@ -1,4 +1,4 @@
-package ru.vsu.cs.team4.task4.Affine.affineComposite;
+package ru.vsu.cs.team4.task4.affine.affineComposite;
 
 
 import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
