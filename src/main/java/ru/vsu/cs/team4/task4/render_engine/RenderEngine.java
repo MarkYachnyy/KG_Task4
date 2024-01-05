@@ -49,7 +49,7 @@ public class RenderEngine {
                 }
             };
 
-            Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, light, 0.5f, textureARGB);
+            Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, light, 0.5f, textureARGB, c -> 255 << 24);
         }
     }
 
@@ -57,7 +57,7 @@ public class RenderEngine {
     public static void renderScene(final int[] buffer, int width, int height,
                                    final Camera camera,
                                    final Scene scene) throws Exception {
-        float SCALE = 1.7f;
+        float SCALE = 7f;
         Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(new Vector3f(SCALE, SCALE, SCALE), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
         Matrix4f viewMatrix = GraphicConveyor.lookAt(camera.getPosition(), camera.getTarget());
         Matrix4f projectionMatrix = GraphicConveyor.perspective(camera.getFov(), camera.getAspectRatio(), camera.getNearPlane(), camera.getFarPlane());
