@@ -1,5 +1,6 @@
 package ru.vsu.cs.team4.task4.render_engine;
 
+import ru.vsu.cs.team4.task4.rasterization.PolygonVertex;
 import ru.vsu.cs.team4.task4.scene.LoadedModel;
 import ru.vsu.cs.team4.task4.scene.Scene;
 import ru.vsu.cs.team4.task4.math.Point2f;
@@ -35,17 +36,20 @@ public class RenderEngine {
             Vector3f n2 = mesh.getNormals().get(polygon.getNormalIndices().get(1));
             Vector3f n3 = mesh.getNormals().get(polygon.getNormalIndices().get(2));
 
+            PolygonVertex pv1 = new PolygonVertex(p1.getX(), p1.getY(), v1.getZ(), vt1.getX(), vt1.getY(), n1);
+            PolygonVertex pv2 = new PolygonVertex(p2.getX(), p2.getY(), v2.getZ(), vt2.getX(), vt2.getY(), n2);
+            PolygonVertex pv3 = new PolygonVertex(p3.getX(), p3.getY(), v3.getZ(), vt3.getX(), vt3.getY(), n3);
+
             ZBufferPixelWriter pixelWriter = (x, y, z, color) -> {
-                if(x < width && y < height && x > 0 && y > 0){
-                    if(z < Z[x][y]){
+                if (x < width && y < height && x > 0 && y > 0) {
+                    if (z < Z[x][y]) {
                         Z[x][y] = z;
                         buffer[x + width * y] = color;
                     }
                 }
             };
 
-            Rasterization.fillPolygon(pixelWriter, p1.getX(), p1.getY(), v1.getZ(), p2.getX(), p2.getY(), v2.getZ(), p3.getX(), p3.getY(), v3.getZ(),
-                    vt1.getX(), vt1.getY(), vt2.getX(), vt2.getY(), vt3.getX(), vt3.getY(),  n1, n2,n3,light, 0.5f, textureARGB);
+            Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, light, 0.5f, textureARGB);
         }
     }
 

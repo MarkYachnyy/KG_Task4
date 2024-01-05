@@ -4,88 +4,33 @@ import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 
 public class Rasterization {
 
-    public static void fillPolygon(ZBufferPixelWriter pixelWriter, int x1, int y1, float z1, int x2, int y2, float z2, int x3, int y3, float z3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3,
-                                   Vector3f n1, Vector3f n2, Vector3f n3, Vector3f light, float ambient, int[][] textureARGB) {
+    public static void fillPolygon(ZBufferPixelWriter pixelWriter, PolygonVertex v1, PolygonVertex v2, PolygonVertex v3, Vector3f light, float ambient, int[][] textureARGB) {
 
 
-
-        if (y1 > y2) {
-            int t = y1;
-            y1 = y2;
-            y2 = t;
-
-            t = x1;
-            x1 = x2;
-            x2 = t;
-
-            float tf = tx1;
-            ty1 = ty2;
-            ty2 = tf;
-
-            tf = tx1;
-            tx1 = tx2;
-            tx2 = tf;
-
-            float tz = z1;
-            z1 = z2;
-            z2 = tz;
-
-            Vector3f tv = n1;
-            n1 = n2;
-            n2 = tv;
+        if (v1.getY() > v2.getY()) {
+            PolygonVertex temp = v1;
+            v1 = v2;
+            v2 = temp;
         }
 
-        if (y1 > y3) {
-            int t = y1;
-            y1 = y3;
-            y3 = t;
-
-            t = x1;
-            x1 = x3;
-            x3 = t;
-
-            float tf = ty1;
-            ty1 = ty3;
-            ty3 = tf;
-
-            tf = tx1;
-            tx1 = tx3;
-            tx3 = tf;
-
-            float tz = z1;
-            z1 = z3;
-            z3 = tz;
-
-            Vector3f tv = n1;
-            n1 = n3;
-            n3 = tv;
+        if (v1.getY() > v3.getY()) {
+            PolygonVertex temp = v1;
+            v1 = v3;
+            v3 = temp;
         }
 
-        if (y2 > y3) {
-            int t = y2;
-            y2 = y3;
-            y3 = t;
-
-            t = x2;
-            x2 = x3;
-            x3 = t;
-
-            float tf = ty2;
-            ty2 = ty3;
-            ty3 = tf;
-
-            tf = tx2;
-            tx2 = tx3;
-            tx3 = tf;
-
-            float tz = z2;
-            z2 = z3;
-            z3 = tz;
-
-            Vector3f tv = n2;
-            n2 = n3;
-            n3 = tv;
+        if (v2.getY() > v3.getY()) {
+            PolygonVertex temp = v2;
+            v2 = v3;
+            v3 = temp;
         }
+
+
+        int x1 = v1.getX(), y1 = v1.getY(), x2 = v2.getX(), y2 = v2.getY(), x3 = v3.getX(), y3 = v3.getY();
+        float z1 = v1.getZ(), z2 = v2.getZ(), z3 = v3.getZ();
+        float tx1 = v1.getTx(), ty1 = v1.getTy(), tx2 = v2.getTx(), ty2 = v2.getTy(), tx3 = v3.getTx(), ty3 = v3.getTy();
+        Vector3f n1 = v1.getNormal(), n2 = v2.getNormal(), n3 = v3.getNormal();
+
 
         int S = x2 * y3 + x3 * y1 + x1 * y2 - y1 * x2 - y2 * x3 - x1 * y3;
 
@@ -183,7 +128,7 @@ public class Rasterization {
                 Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(nL, -kL)).normalized();
                 float dp = normal.dotProduct(light);
                 if (dp < 0) dp = 0;
-                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tWidth)];
+                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
                 float k = ambient + dp * (1 - ambient);
 
                 pixelWriter.setRGB(xcL, y0, z, fadeColorARGB(color, k));
@@ -213,7 +158,7 @@ public class Rasterization {
                 Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(nR, -kR)).normalized();
                 float dp = normal.dotProduct(light);
                 if (dp < 0) dp = 0;
-                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tWidth)];
+                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
                 float k = ambient + dp * (1 - ambient);
 
                 pixelWriter.setRGB(xcR, y0, z, fadeColorARGB(color, k));
@@ -310,7 +255,7 @@ public class Rasterization {
                 Vector3f normal = Vector3f.sum(Vector3f.mul(n3, -k3), Vector3f.mul(nL, -kL)).normalized();
                 float dp = normal.dotProduct(light);
                 if (dp < 0) dp = 0;
-                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tWidth)];
+                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
                 float k = ambient + dp * (1 - ambient);
 
                 pixelWriter.setRGB(xcL, y0, z, fadeColorARGB(color, k));
@@ -341,7 +286,7 @@ public class Rasterization {
                 Vector3f normal = Vector3f.sum(Vector3f.mul(n3, -k3), Vector3f.mul(nR, -kR)).normalized();
                 float dp = normal.dotProduct(light);
                 if (dp < 0) dp = 0;
-                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tWidth)];
+                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
                 float k = ambient + dp * (1 - ambient);
 
                 pixelWriter.setRGB(xcR, y0, z, fadeColorARGB(color, k));
