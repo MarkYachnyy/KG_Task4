@@ -7,10 +7,6 @@ public class Rasterization {
     public static void fillPolygon(ZBufferPixelWriter pixelWriter, int x1, int y1, float z1, int x2, int y2, float z2, int x3, int y3, float z3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3,
                                    Vector3f n1, Vector3f n2, Vector3f n3, Vector3f light, float ambient, int[][] textureARGB) {
 
-        float A = (y2 - y1) * (z3 - z1) - (y3 - y1) * (z2 - z1);
-        float B = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
-        float C = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
-        float D = -A * x1 - B * y1 - C * z1;
 
 
         if (y1 > y2) {
@@ -90,6 +86,13 @@ public class Rasterization {
             n2 = n3;
             n3 = tv;
         }
+
+        int S = x2 * y3 + x3 * y1 + x1 * y2 - y1 * x2 - y2 * x3 - x1 * y3;
+
+        float A = (y2 - y1) * (z3 - z1) - (y3 - y1) * (z2 - z1);
+        float B = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
+        float C = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
+        float D = -A * x1 - B * y1 - C * z1;
 
         int dxL, dyL, dxR, dyR, yL, yR, xL, xR;
         int dxL_sign, dxR_sign;
@@ -228,7 +231,7 @@ public class Rasterization {
                 to = Math.min(xcR, xcR - xToMove * dxR_sign - 1);
             }
 
-            drawLineWithInterpolation(A, B, C, D, pixelWriter, x1, x2, x3, y1, y2, y3, z1, z2, z3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, textureARGB, n1, n2, n3, light, ambient);
+            drawLineWithInterpolation(A, B, C, D, S, pixelWriter, x1, x2, x3, y1, y2, y3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, textureARGB, n1, n2, n3, light, ambient);
         }
 
         //ОБРАБОТКА ПОСЛЕДНЕЙ ИТЕРАЦИИ ВЕРХНЕЙ ПОЛОВИНЫ
@@ -357,7 +360,7 @@ public class Rasterization {
                 to = Math.min(xcR, xcR - xToMove * dxR_sign - 1);
             }
 
-            drawLineWithInterpolation(A, B, C, D, pixelWriter, x1, x2, x3, y1, y2, y3, z1, z2, z3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, textureARGB, n1, n2, n3, light, ambient);
+            drawLineWithInterpolation(A, B, C, D, S, pixelWriter, x1, x2, x3, y1, y2, y3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, textureARGB, n1, n2, n3, light, ambient);
         }
 
         //ОБРАБОТКА ПОСЛЕДНЕЙ ИТЕРАЦИИ ПОСЛЕДНЕЙ ПОЛОВИНЫ
@@ -399,11 +402,11 @@ public class Rasterization {
         }
     }
 
-    private static void drawLineWithInterpolation(float A, float B, float C, float D, ZBufferPixelWriter pixelWriter, int x1, int x2, int x3, int y1, int y2, int y3, float z1, float z2, float z3,
+    private static void drawLineWithInterpolation(float A, float B, float C, float D, int s, ZBufferPixelWriter pixelWriter, int x1, int x2, int x3, int y1, int y2, int y3,
                                                   float tx1, float ty1, float tx2, float ty2, float tx3, float ty3,
                                                   int yc, int from, int to, int[][] texture, Vector3f n1, Vector3f n2, Vector3f n3, Vector3f light, float ambient) {
 
-        int s = x2 * y3 + x3 * y1 + x1 * y2 - y1 * x2 - y2 * x3 - x1 * y3;
+        //int s = x2 * y3 + x3 * y1 + x1 * y2 - y1 * x2 - y2 * x3 - x1 * y3;
         int s1 = x2 * y3 + from * y2 + yc * x3 - yc * x2 - y2 * x3 - from * y3;
         int s2 = from * y3 + x1 * yc + y1 * x3 - from * y1 - yc * x3 - x1 * y3;
         int s3 = x2 * yc + x1 * y2 + from * y1 - x2 * y1 - from * y2 - x1 * yc;
