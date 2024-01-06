@@ -2,6 +2,7 @@ package ru.vsu.cs.team4.task4.scene;
 
 
 import javafx.scene.control.CheckBox;
+import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 import ru.vsu.cs.team4.task4.model.Model;
 import ru.vsu.cs.team4.task4.model.ModelTriangulated;
 import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
@@ -9,11 +10,40 @@ import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
 
 public class LoadedModel {
 
+    private int id;
     private ModelTriangulated model;
     private String modelPath;
     private CheckBox isActive;
     private CheckBox isEditable;
     private ColorIntARGB[][] textureARGB;
+
+    private Vector3f rotateV = new Vector3f(0,0,0);
+    private Vector3f translateV = new Vector3f(0,0,0);
+    private Vector3f scaleV = new Vector3f(1,1,1);
+
+    public Vector3f getRotateV() {
+        return rotateV;
+    }
+
+    public Vector3f getTranslateV() {
+        return translateV;
+    }
+
+    public Vector3f getScaleV() {
+        return scaleV;
+    }
+
+    public void setRotateV(Vector3f rotateV) {
+        this.rotateV = rotateV;
+    }
+
+    public void setTranslateV(Vector3f translateV) {
+        this.translateV = translateV;
+    }
+
+    public void setScaleV(Vector3f scaleV) {
+        this.scaleV = scaleV;
+    }
 
     public CheckBox getActivationCheckbox() {
         return isActive;
@@ -76,5 +106,17 @@ public class LoadedModel {
 
     public void setTextureARGB(ColorIntARGB[][] textureARGB) {
         this.textureARGB = textureARGB;
+    }
+
+    public boolean isEditable(){
+        return isEditable.isSelected();
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
     }
 }

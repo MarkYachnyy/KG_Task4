@@ -10,8 +10,11 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -65,6 +68,28 @@ public class GuiController {
     @FXML
     private TableColumn<LoadedModel, CheckBox> isEditable;
 
+    @FXML
+    private TextField scaleX;
+    @FXML
+    private TextField scaleY;
+    @FXML
+    private TextField scaleZ;
+
+    @FXML
+    private TextField translateX;
+    @FXML
+    private TextField translateY;
+    @FXML
+    private TextField translateZ;
+
+    @FXML
+    private TextField rotateX;
+
+    @FXML
+    private TextField rotateY;
+
+    @FXML
+    private TextField rotateZ;
 
     private Model mesh = null;
     private Scene scene = null;
@@ -100,6 +125,14 @@ public class GuiController {
                 } else {
                     setGraphic(checkBox);
                 }
+            }
+        });
+
+        tableView.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.CONTROL) {
+                tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            } else if (event.getCode() == KeyCode.SHIFT) {
+                tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
             }
         });
 
@@ -191,8 +224,22 @@ public class GuiController {
             mesh.setNormals(normals);
             LoadedModel newModel = new LoadedModel(new ModelTriangulated(mesh), "name");
             newModel.setModelPath(fileName.toString());
-            newModel.setIsActive(new CheckBox());
-            newModel.setIsEditable(new CheckBox());
+            newModel.setId(scene.getModels().size());
+
+            CheckBox checkBox1 = new CheckBox();
+            newModel.setIsActive(checkBox1);
+            CheckBox checkBox2 = new CheckBox();
+            checkBox2.setDisable(true);
+            newModel.setIsEditable(checkBox2);
+            checkBox1.setOnAction(event -> {
+                // Если checkBox1 выбран, активируем checkBox2, иначе деактивируем
+                checkBox2.setDisable(!checkBox1.isSelected());
+                if (!checkBox1.isSelected()) {
+                    checkBox2.setSelected(false);
+                }
+
+            });
+
             // Update the existing ObservableList
             final ObservableList<LoadedModel> data = tableView.getItems();
             data.add(newModel); // Assuming Models has a constructor
@@ -223,6 +270,53 @@ public class GuiController {
     @FXML
     private void onSaveModelMenuItemClick() {
 
+    }
+
+    @FXML
+    private void onClickScale() {
+        float x = Float.parseFloat(scaleX.getText());
+        float y = Float.parseFloat(scaleY.getText());
+        float z = Float.parseFloat(scaleZ.getText());
+
+        for (LoadedModel lm : scene.getModels()) {
+            if (lm.isEditable()) {
+                lm.setScaleV(new Vector3f(x,y,z));
+            }
+        }
+    }
+
+    @FXML
+    private void onClickTranslate() {
+        float x = Float.parseFloat(translateX.getText());
+        float y = Float.parseFloat(translateY.getText());
+        float z = Float.parseFloat(translateZ.getText());
+
+        for (LoadedModel lm : scene.getModels()) {
+            if (lm.isEditable()) {
+                lm.setTranslateV(new Vector3f(x,y,z));
+            }
+        }
+    }
+
+    @FXML
+    private void onClickRotate() {
+        float x = (float) Math.toRadians(Float.parseFloat(rotateX.getText()));
+        float y = (float) Math.toRadians(Float.parseFloat(rotateY.getText()));
+        float z = (float) Math.toRadians(Float.parseFloat(rotateZ.getText()));
+
+        for (LoadedModel lm : scene.getModels()) {
+            if (lm.isEditable()) {
+                lm.setRotateV(new Vector3f(x,y,z));
+            }
+        }
+    }
+
+    @FXML
+    private void deleteSelected() {
+        ObservableList<LoadedModel> selectedModels = tableView.getSelectionModel().getSelectedItems();
+        // Удаляем выделенные модели из сцены и из таблицы
+        scene.getModels().removeAll(selectedModels);
+        tableView.getItems().removeAll(selectedModels);
     }
 
     @FXML
