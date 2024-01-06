@@ -9,6 +9,7 @@ import java.util.List;
 
 public class Scene {
 
+
     private List<LoadedModel> models;
     private Vector3f light;
 

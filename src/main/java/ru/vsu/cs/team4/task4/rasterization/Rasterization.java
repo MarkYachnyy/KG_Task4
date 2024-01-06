@@ -7,7 +7,7 @@ import java.util.function.Function;
 public class Rasterization {
 
     public static void fillPolygon(ZBufferPixelWriter pixelWriter, PolygonVertex v1, PolygonVertex v2, PolygonVertex v3, Vector3f light,
-                                   float ambient, int[][] textureARGB, Function<Integer, Integer> borderColorTransfiguration) {
+                                   float ambient, ColorIntARGB[][] textureARGB, Function<Integer, Integer> borderColorTransfiguration) {
 
         if (v1.getY() > v2.getY()) {
             PolygonVertex temp = v1;
@@ -128,7 +128,7 @@ public class Rasterization {
                 Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(nL, -kL)).normalized();
                 float dp = normal.dotProduct(light);
                 if (dp < 0) dp = 0;
-                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
+                ColorIntARGB color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
                 float k = ambient + dp * (1 - ambient);
 
                 pixelWriter.setRGB(xcL, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
@@ -158,7 +158,7 @@ public class Rasterization {
                 Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(nR, -kR)).normalized();
                 float dp = normal.dotProduct(light);
                 if (dp < 0) dp = 0;
-                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
+                ColorIntARGB color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
                 float k = ambient + dp * (1 - ambient);
 
                 pixelWriter.setRGB(xcR, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
@@ -255,7 +255,7 @@ public class Rasterization {
                 Vector3f normal = Vector3f.sum(Vector3f.mul(n3, -k3), Vector3f.mul(nL, -kL)).normalized();
                 float dp = normal.dotProduct(light);
                 if (dp < 0) dp = 0;
-                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
+                ColorIntARGB color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
                 float k = ambient + dp * (1 - ambient);
 
                 pixelWriter.setRGB(xcL, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
@@ -286,7 +286,7 @@ public class Rasterization {
                 Vector3f normal = Vector3f.sum(Vector3f.mul(n3, -k3), Vector3f.mul(nR, -kR)).normalized();
                 float dp = normal.dotProduct(light);
                 if (dp < 0) dp = 0;
-                int color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
+                ColorIntARGB color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
                 float k = ambient + dp * (1 - ambient);
 
                 pixelWriter.setRGB(xcR, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
@@ -320,7 +320,7 @@ public class Rasterization {
 
     private static void drawLineWithInterpolation(ZBufferPixelWriter pixelWriter, int x1, float z1, int x2, float z2, float tx1,
                                                   float ty1, float tx2, float ty2, int xc, int yc, int l, int sign,
-                                                  int[][] texture, Vector3f n1, Vector3f n2, Vector3f light, float ambient, Function<Integer, Integer> borderColorTransfiguration) {
+                                                  ColorIntARGB[][] texture, Vector3f n1, Vector3f n2, Vector3f light, float ambient, Function<Integer, Integer> borderColorTransfiguration) {
         int x0 = xc;
         int x01 = x2 - xc;
         int x02 = xc - x1;
@@ -339,7 +339,7 @@ public class Rasterization {
             Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(n2, -k2)).normalized();
             float dp = normal.dotProduct(light);
             if (dp < 0) dp = 0;
-            int color = texture[(int) (tx * width)][(int) (ty * height)];
+            ColorIntARGB color = texture[(int) (tx * width)][(int) (ty * height)];
             float k = ambient + dp * (1 - ambient);
 
             pixelWriter.setRGB(x0, yc, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
@@ -351,7 +351,7 @@ public class Rasterization {
 
     private static void drawLineWithInterpolation(float A, float B, float C, float D, int s, ZBufferPixelWriter pixelWriter, int x1, int x2, int x3, int y1, int y2, int y3,
                                                   float tx1, float ty1, float tx2, float ty2, float tx3, float ty3,
-                                                  int yc, int from, int to, int[][] texture, Vector3f n1, Vector3f n2, Vector3f n3, Vector3f light, float ambient) {
+                                                  int yc, int from, int to, ColorIntARGB[][] texture, Vector3f n1, Vector3f n2, Vector3f n3, Vector3f light, float ambient) {
 
         //int s = x2 * y3 + x3 * y1 + x1 * y2 - y1 * x2 - y2 * x3 - x1 * y3;
         int s1 = x2 * y3 + from * y2 + yc * x3 - yc * x2 - y2 * x3 - from * y3;
@@ -377,7 +377,7 @@ public class Rasterization {
             Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(n2, -k2)).add(Vector3f.mul(n3, -k3)).normalized();
             float dp = normal.dotProduct(light);
             if (dp < 0) dp = 0;
-            int color = texture[(int) (tx * width)][(int) (ty * height)];
+            ColorIntARGB color = texture[(int) (tx * width)][(int) (ty * height)];
             float k = ambient + dp * (1 - ambient);
 
             pixelWriter.setRGB(x0, yc, z, fadeColorARGB(color, k));
@@ -388,18 +388,16 @@ public class Rasterization {
         }
     }
 
-    private static int fadeColorARGB(int color, float k) {
-        var blue = (color) & 255;
-        var green = (color >> 8) & 255;
-        var red = (color >> 16) & 255;
-        blue = (int) (blue * k);
-        green = (int) (green * k);
-        red = (int) (red * k);
+    private static int fadeColorARGB(ColorIntARGB color, float k) {
+
+        int blue = (int) (color.getBlue() * k);
+        int green = (int) (color.getGreen() * k);
+        int red = (int) (color.getRed() * k);
         return 255 << 24 | red << 16 | green << 8 | blue;
     }
 
     public static void fillPolygon(ZBufferPixelWriter pixelWriter, PolygonVertex v1, PolygonVertex v2, PolygonVertex v3, Vector3f light,
-                                   float ambient, int[][] textureARGB) {
+                                   float ambient, ColorIntARGB[][] textureARGB) {
         fillPolygon(pixelWriter, v1, v2, v3, light, ambient, textureARGB, c -> c);
     }
 }

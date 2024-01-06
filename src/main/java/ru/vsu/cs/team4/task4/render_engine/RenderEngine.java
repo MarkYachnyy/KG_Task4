@@ -1,5 +1,6 @@
 package ru.vsu.cs.team4.task4.render_engine;
 
+import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
 import ru.vsu.cs.team4.task4.rasterization.PolygonVertex;
 import ru.vsu.cs.team4.task4.scene.LoadedModel;
 import ru.vsu.cs.team4.task4.scene.Scene;
@@ -17,7 +18,7 @@ import java.util.Arrays;
 public class RenderEngine {
     private static void renderModel(final int[] buffer, int width, int height,
                                     final Matrix4f modelViewProjectionMatrix,
-                                    final ModelTriangulated mesh, int[][] textureARGB, float[][] Z, Vector3f light) {
+                                    final ModelTriangulated mesh, ColorIntARGB[][] textureARGB, float[][] Z, Vector3f light) {
 
         for (Polygon polygon : mesh.getPolygons()) {
             Vector3f v1 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, mesh.getVertices().get(polygon.getVertexIndices().get(0)));

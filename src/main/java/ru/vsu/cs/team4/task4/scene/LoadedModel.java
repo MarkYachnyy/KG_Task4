@@ -4,6 +4,7 @@ package ru.vsu.cs.team4.task4.scene;
 import javafx.scene.control.CheckBox;
 import ru.vsu.cs.team4.task4.model.Model;
 import ru.vsu.cs.team4.task4.model.ModelTriangulated;
+import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
 
 
 public class LoadedModel {
@@ -12,7 +13,7 @@ public class LoadedModel {
     private String modelPath;
     private CheckBox isActive;
     private CheckBox isEditable;
-    private int[][] textureARGB;
+    private ColorIntARGB[][] textureARGB;
 
     public CheckBox getActivationCheckbox() {
         return isActive;
@@ -25,12 +26,7 @@ public class LoadedModel {
     public LoadedModel(ModelTriangulated model, String modelPath) {
         this.model = model;
         this.modelPath = modelPath;
-        int alpha = 255;
-        int red = 255;
-        int green = 255;
-        int blue = 255;
-        int colorARGB = alpha << 24 | red << 16 | green << 8 | blue;
-        this.textureARGB = new int[][]{{colorARGB}};
+        this.textureARGB = new ColorIntARGB[][]{{new ColorIntARGB(255, 255,255,255)}};
     }
 
     public LoadedModel(ModelTriangulated model, String modelPath, CheckBox isActive) {
@@ -74,11 +70,11 @@ public class LoadedModel {
         return modelPath;
     }
 
-    public int[][] getTextureARGB() {
+    public ColorIntARGB[][] getTextureARGB() {
         return textureARGB;
     }
 
-    public void setTextureARGB(int[][] textureARGB) {
+    public void setTextureARGB(ColorIntARGB[][] textureARGB) {
         this.textureARGB = textureARGB;
     }
 }
