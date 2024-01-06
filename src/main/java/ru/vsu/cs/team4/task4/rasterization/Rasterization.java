@@ -1,5 +1,6 @@
 package ru.vsu.cs.team4.task4.rasterization;
 
+import ru.vsu.cs.team4.task4.math.vector.Vector;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 
 import java.util.function.Function;
@@ -7,7 +8,7 @@ import java.util.function.Function;
 public class Rasterization {
 
     public static void fillPolygon(ZBufferPixelWriter pixelWriter, PolygonVertex v1, PolygonVertex v2, PolygonVertex v3, Vector3f light,
-                                   float ambient, ColorIntARGB[][] textureARGB, Function<Integer, Integer> borderColorTransfiguration) {
+                                   float ambient, ColorIntARGB[][] textureARGB, Function<Integer, Integer> borderColorTransfiguration, boolean disableSmoothing) {
 
         if (v1.getY() > v2.getY()) {
             PolygonVertex temp = v1;
@@ -38,6 +39,10 @@ public class Rasterization {
         float B = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
         float C = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
         float D = -A * x1 - B * y1 - C * z1;
+
+        float dp0 = -Vector3f.sum(n1, n2).add(n3).normalized().dotProduct(light);
+        if(dp0 < 0) dp0 = 0;
+        float kNotSmoothed = ambient + (1-ambient) * dp0;
 
         int dxL, dyL, dxR, dyR, yL, yR, xL, xR;
         int dxL_sign, dxR_sign;
@@ -125,13 +130,18 @@ public class Rasterization {
                 float tx = tx1 * k1 + txL * kL;
                 float ty = ty1 * k1 + tyL * kL;
                 float z = z1 * k1 + zL * kL;
-                Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(nL, -kL)).normalized();
-                float dp = normal.dotProduct(light);
-                if (dp < 0) dp = 0;
                 ColorIntARGB color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
-                float k = ambient + dp * (1 - ambient);
 
-                pixelWriter.setRGB(xcL, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
+                if(disableSmoothing){
+                    pixelWriter.setRGB(xcL, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, kNotSmoothed)));
+                } else {
+                    Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(nL, -kL)).normalized();
+                    float dp = normal.dotProduct(light);
+                    if (dp < 0) dp = 0;
+                    float k = ambient + dp * (1 - ambient);
+
+                    pixelWriter.setRGB(xcL, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
+                }
 
                 from = xcL + 1;
                 faultL_num += 2 * dxL;
@@ -143,7 +153,8 @@ public class Rasterization {
                 int xToMove = 1 + (faultL_denom - faultL_num) / (2 * dyL);
                 xcL += xToMove * dxL_sign;
                 faultL_num += 2 * dyL * xToMove - faultL_denom;
-                drawLineWithInterpolation(pixelWriter, x1, z1, xL, zL, tx1, ty1, txL, tyL, xcL - dxL_sign, y0, xToMove, -dxL_sign, textureARGB, n1, nL, light, ambient, borderColorTransfiguration);
+                drawLineWithInterpolation(pixelWriter, x1, z1, xL, zL, tx1, ty1, txL, tyL, xcL - dxL_sign, y0, xToMove, -dxL_sign, textureARGB, n1, nL,
+                        light, ambient, borderColorTransfiguration, disableSmoothing, kNotSmoothed);
                 from = Math.max(xcL, xcL - xToMove * dxL_sign + 1);
             }
 
@@ -155,13 +166,19 @@ public class Rasterization {
                 float ty = ty1 * k1 + tyR * kR;
                 float z = z1 * k1 + zR * kR;
 
-                Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(nR, -kR)).normalized();
-                float dp = normal.dotProduct(light);
-                if (dp < 0) dp = 0;
                 ColorIntARGB color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
-                float k = ambient + dp * (1 - ambient);
 
-                pixelWriter.setRGB(xcR, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
+                if(disableSmoothing){
+                    pixelWriter.setRGB(xcR, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, kNotSmoothed)));
+                } else {
+                    Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(nR, -kR)).normalized();
+                    float dp = normal.dotProduct(light);
+                    if (dp < 0) dp = 0;
+                    float k = ambient + dp * (1 - ambient);
+
+                    pixelWriter.setRGB(xcR, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
+                }
+
                 to = xcR - 1;
                 faultR_num += 2 * dxR;
                 if (faultR_num >= faultR_denom) {
@@ -172,22 +189,25 @@ public class Rasterization {
                 int xToMove = 1 + (faultR_denom - faultR_num) / (2 * dyR);
                 xcR += xToMove * dxR_sign;
                 faultR_num += 2 * dyR * xToMove - faultR_denom;
-                drawLineWithInterpolation(pixelWriter, x1, z1, xR, zR, tx1, ty1, txR, tyR, xcR - dxR_sign, y0, xToMove, -dxR_sign, textureARGB, n1, nR, light, ambient, borderColorTransfiguration);
+                drawLineWithInterpolation(pixelWriter, x1, z1, xR, zR, tx1, ty1, txR, tyR, xcR - dxR_sign, y0, xToMove, -dxR_sign, textureARGB, n1, nR,
+                        light, ambient, borderColorTransfiguration, disableSmoothing, kNotSmoothed);
                 to = Math.min(xcR, xcR - xToMove * dxR_sign - 1);
             }
 
-            drawLineWithInterpolation(A, B, C, D, S, pixelWriter, x1, x2, x3, y1, y2, y3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, textureARGB, n1, n2, n3, light, ambient);
+            drawLineWithInterpolation(A, B, C, D, S, pixelWriter, x1, x2, x3, y1, y2, y3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, textureARGB, n1, n2, n3, light, ambient, disableSmoothing, kNotSmoothed);
         }
 
         //ОБРАБОТКА ПОСЛЕДНЕЙ ИТЕРАЦИИ ВЕРХНЕЙ ПОЛОВИНЫ
 
         if (longSideOnTheRight) {
             if (!steepL)
-                drawLineWithInterpolation(pixelWriter, x1, z1, xL, zL, tx1, ty1, txL, tyL, x2, y2, Math.abs(xcL - x2) + 1, -dxL_sign, textureARGB, n1, nL, light, ambient, borderColorTransfiguration);
+                drawLineWithInterpolation(pixelWriter, x1, z1, xL, zL, tx1, ty1, txL, tyL, x2, y2, Math.abs(xcL - x2) + 1, -dxL_sign, textureARGB, n1, nL,
+                        light, ambient, borderColorTransfiguration, disableSmoothing, kNotSmoothed);
             xcL = x2;
         } else {
             if (!steepR)
-                drawLineWithInterpolation(pixelWriter, x1, z1, xR, zR, tx1, ty1, txR, tyR, x2, y2, Math.abs(xcR - x2) + 1, -dxR_sign, textureARGB, n1, nR, light, ambient, borderColorTransfiguration);
+                drawLineWithInterpolation(pixelWriter, x1, z1, xR, zR, tx1, ty1, txR, tyR, x2, y2, Math.abs(xcR - x2) + 1, -dxR_sign, textureARGB, n1, nR,
+                        light, ambient, borderColorTransfiguration, disableSmoothing, kNotSmoothed);
             xcR = x2;
         }
 
@@ -252,13 +272,18 @@ public class Rasterization {
                 float ty = ty3 * k3 + tyL * kL;
                 float z = z3 * k3 + zL * kL;
 
-                Vector3f normal = Vector3f.sum(Vector3f.mul(n3, -k3), Vector3f.mul(nL, -kL)).normalized();
-                float dp = normal.dotProduct(light);
-                if (dp < 0) dp = 0;
                 ColorIntARGB color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
-                float k = ambient + dp * (1 - ambient);
 
-                pixelWriter.setRGB(xcL, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
+                if(disableSmoothing){
+                    pixelWriter.setRGB(xcL, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, kNotSmoothed)));
+                } else {
+                    Vector3f normal = Vector3f.sum(Vector3f.mul(n3, -k3), Vector3f.mul(nL, -kL)).normalized();
+                    float dp = normal.dotProduct(light);
+                    if (dp < 0) dp = 0;
+                    float k = ambient + dp * (1 - ambient);
+
+                    pixelWriter.setRGB(xcL, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
+                }
 
                 from = xcL + 1;
                 faultL_num += 2 * dxL;
@@ -271,7 +296,8 @@ public class Rasterization {
                 int xToMove = 1 + (faultL_denom - faultL_num) / (2 * dyL);
                 xcL += xToMove * dxL_sign;
                 faultL_num += 2 * dyL * xToMove - faultL_denom;
-                drawLineWithInterpolation(pixelWriter, x3, z3, xL, zL, tx3, ty3, txL, tyL, xcL - dxL_sign, y0, xToMove, -dxL_sign, textureARGB, n3, nL, light, ambient, borderColorTransfiguration);
+                drawLineWithInterpolation(pixelWriter, x3, z3, xL, zL, tx3, ty3, txL, tyL, xcL - dxL_sign, y0, xToMove, -dxL_sign, textureARGB, n3, nL,
+                        light, ambient, borderColorTransfiguration, disableSmoothing, kNotSmoothed);
                 from = Math.max(xcL, xcL - xToMove * dxL_sign + 1);
             }
 
@@ -283,13 +309,18 @@ public class Rasterization {
                 float ty = ty3 * k3 + tyR * kR;
                 float z = z3 * k3 + zR * kR;
 
-                Vector3f normal = Vector3f.sum(Vector3f.mul(n3, -k3), Vector3f.mul(nR, -kR)).normalized();
-                float dp = normal.dotProduct(light);
-                if (dp < 0) dp = 0;
                 ColorIntARGB color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
-                float k = ambient + dp * (1 - ambient);
 
-                pixelWriter.setRGB(xcR, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
+                if(disableSmoothing){
+                    pixelWriter.setRGB(xcR, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, kNotSmoothed)));
+                } else {
+                    Vector3f normal = Vector3f.sum(Vector3f.mul(n3, -k3), Vector3f.mul(nR, -kR)).normalized();
+                    float dp = normal.dotProduct(light);
+                    if (dp < 0) dp = 0;
+                    float k = ambient + dp * (1 - ambient);
+
+                    pixelWriter.setRGB(xcR, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
+                }
 
                 to = xcR - 1;
                 faultR_num += 2 * dxR;
@@ -301,26 +332,30 @@ public class Rasterization {
                 int xToMove = 1 + (faultR_denom - faultR_num) / (2 * dyR);
                 xcR += xToMove * dxR_sign;
                 faultR_num += 2 * dyR * xToMove - faultR_denom;
-                drawLineWithInterpolation(pixelWriter, x3, z3, xR, zR, tx3, ty3, txR, tyR, xcR - dxR_sign, y0, xToMove, -dxR_sign, textureARGB, n3, nR, light, ambient, borderColorTransfiguration);
+                drawLineWithInterpolation(pixelWriter, x3, z3, xR, zR, tx3, ty3, txR, tyR, xcR - dxR_sign, y0, xToMove, -dxR_sign, textureARGB, n3, nR,
+                        light, ambient, borderColorTransfiguration, disableSmoothing, kNotSmoothed);
                 to = Math.min(xcR, xcR - xToMove * dxR_sign - 1);
             }
 
-            drawLineWithInterpolation(A, B, C, D, S, pixelWriter, x1, x2, x3, y1, y2, y3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, textureARGB, n1, n2, n3, light, ambient);
+            drawLineWithInterpolation(A, B, C, D, S, pixelWriter, x1, x2, x3, y1, y2, y3, tx1, ty1, tx2, ty2, tx3, ty3, y0, from, to, textureARGB, n1, n2, n3, light, ambient, disableSmoothing, kNotSmoothed);
         }
 
         //ОБРАБОТКА ПОСЛЕДНЕЙ ИТЕРАЦИИ ПОСЛЕДНЕЙ ПОЛОВИНЫ
 
         if (!steepL)
-            drawLineWithInterpolation(pixelWriter, x3, z3, xL, zL, tx3, ty3, txL, tyL, x3, y3, Math.abs(xcL - x3) + 1, -dxL_sign, textureARGB, n3, nL, light, ambient, borderColorTransfiguration);
+            drawLineWithInterpolation(pixelWriter, x3, z3, xL, zL, tx3, ty3, txL, tyL, x3, y3, Math.abs(xcL - x3) + 1, -dxL_sign, textureARGB, n3, nL,
+                    light, ambient, borderColorTransfiguration, disableSmoothing, kNotSmoothed);
 
         if (!steepR)
-            drawLineWithInterpolation(pixelWriter, x3, z3, xR, zR, tx3, ty3, txR, tyR, x3, y3, Math.abs(xcR - x3) + 1, -dxR_sign, textureARGB, n3, nR, light, ambient, borderColorTransfiguration);
+            drawLineWithInterpolation(pixelWriter, x3, z3, xR, zR, tx3, ty3, txR, tyR, x3, y3, Math.abs(xcR - x3) + 1, -dxR_sign, textureARGB, n3, nR,
+                    light, ambient, borderColorTransfiguration, disableSmoothing, kNotSmoothed);
 
     }
 
     private static void drawLineWithInterpolation(ZBufferPixelWriter pixelWriter, int x1, float z1, int x2, float z2, float tx1,
                                                   float ty1, float tx2, float ty2, int xc, int yc, int l, int sign,
-                                                  ColorIntARGB[][] texture, Vector3f n1, Vector3f n2, Vector3f light, float ambient, Function<Integer, Integer> borderColorTransfiguration) {
+                                                  ColorIntARGB[][] texture, Vector3f n1, Vector3f n2, Vector3f light,
+                                                  float ambient, Function<Integer, Integer> borderColorTransfiguration, boolean disableSmoothing, float kNotSmoothed) {
         int x0 = xc;
         int x01 = x2 - xc;
         int x02 = xc - x1;
@@ -335,14 +370,19 @@ public class Rasterization {
             float tx = tx1 * k1 + tx2 * k2;
             float ty = ty1 * x01 / dx + ty2 * x02 / dx;
             float z = z1 * x01 / dx + z2 * x02 / dx;
-
-            Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(n2, -k2)).normalized();
-            float dp = normal.dotProduct(light);
-            if (dp < 0) dp = 0;
             ColorIntARGB color = texture[(int) (tx * width)][(int) (ty * height)];
-            float k = ambient + dp * (1 - ambient);
 
-            pixelWriter.setRGB(x0, yc, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
+            if(disableSmoothing){
+                pixelWriter.setRGB(x0, yc, z, borderColorTransfiguration.apply(fadeColorARGB(color, kNotSmoothed)));
+            } else {
+                Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(n2, -k2)).normalized();
+                float dp = normal.dotProduct(light);
+                if (dp < 0) dp = 0;
+                float k = ambient + dp * (1 - ambient);
+
+                pixelWriter.setRGB(x0, yc, z, borderColorTransfiguration.apply(fadeColorARGB(color, k)));
+            }
+
             x0 += sign;
             x01 -= sign;
             x02 += sign;
@@ -351,9 +391,9 @@ public class Rasterization {
 
     private static void drawLineWithInterpolation(float A, float B, float C, float D, int s, ZBufferPixelWriter pixelWriter, int x1, int x2, int x3, int y1, int y2, int y3,
                                                   float tx1, float ty1, float tx2, float ty2, float tx3, float ty3,
-                                                  int yc, int from, int to, ColorIntARGB[][] texture, Vector3f n1, Vector3f n2, Vector3f n3, Vector3f light, float ambient) {
+                                                  int yc, int from, int to, ColorIntARGB[][] texture, Vector3f n1, Vector3f n2, Vector3f n3,
+                                                  Vector3f light, float ambient, boolean disableSmoothing, float kNotSmoothed) {
 
-        //int s = x2 * y3 + x3 * y1 + x1 * y2 - y1 * x2 - y2 * x3 - x1 * y3;
         int s1 = x2 * y3 + from * y2 + yc * x3 - yc * x2 - y2 * x3 - from * y3;
         int s2 = from * y3 + x1 * yc + y1 * x3 - from * y1 - yc * x3 - x1 * y3;
         int s3 = x2 * yc + x1 * y2 + from * y1 - x2 * y1 - from * y2 - x1 * yc;
@@ -374,13 +414,18 @@ public class Rasterization {
             float ty = ty1 * k1 + ty2 * k2 + ty3 * k3;
             float z = -(A * x0 + B * yc + D) / C;
 
-            Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(n2, -k2)).add(Vector3f.mul(n3, -k3)).normalized();
-            float dp = normal.dotProduct(light);
-            if (dp < 0) dp = 0;
             ColorIntARGB color = texture[(int) (tx * width)][(int) (ty * height)];
-            float k = ambient + dp * (1 - ambient);
 
-            pixelWriter.setRGB(x0, yc, z, fadeColorARGB(color, k));
+            if(disableSmoothing){
+                pixelWriter.setRGB(x0, yc, z, fadeColorARGB(color, kNotSmoothed));
+            } else {
+                Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(n2, -k2)).add(Vector3f.mul(n3, -k3)).normalized();
+                float dp = normal.dotProduct(light);
+                if (dp < 0) dp = 0;
+                float k = ambient + dp * (1 - ambient);
+
+                pixelWriter.setRGB(x0, yc, z, fadeColorARGB(color, k));
+            }
 
             s1 += ds1;
             s2 += ds2;
@@ -398,6 +443,6 @@ public class Rasterization {
 
     public static void fillPolygon(ZBufferPixelWriter pixelWriter, PolygonVertex v1, PolygonVertex v2, PolygonVertex v3, Vector3f light,
                                    float ambient, ColorIntARGB[][] textureARGB) {
-        fillPolygon(pixelWriter, v1, v2, v3, light, ambient, textureARGB, c -> c);
+        fillPolygon(pixelWriter, v1, v2, v3, light, ambient, textureARGB, c -> c, true);
     }
 }
