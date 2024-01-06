@@ -50,7 +50,7 @@ public class RenderEngine {
                 }
             };
 
-            Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, light, 0.5f, textureARGB);
+            Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, light, 0.4f, textureARGB, c -> c, true);
         }
     }
 
@@ -58,8 +58,6 @@ public class RenderEngine {
     public static void renderScene(final int[] buffer, int width, int height,
                                    final Camera camera,
                                    final Scene scene) throws Exception {
-        /*float SCALE = 7f;*/
-
 
         float[][] Z = new float[width][height];
         for (float[] row : Z) {

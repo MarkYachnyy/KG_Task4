@@ -36,6 +36,7 @@ import ru.vsu.cs.team4.task4.scene.LoadedModel;
 import ru.vsu.cs.team4.task4.scene.Scene;
 
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.IntBuffer;
@@ -84,10 +85,8 @@ public class GuiController {
 
     @FXML
     private TextField rotateX;
-
     @FXML
     private TextField rotateY;
-
     @FXML
     private TextField rotateZ;
 
@@ -101,6 +100,7 @@ public class GuiController {
             new Vector3f(0, 100, 100),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
+    private final static int CAMERA_ZOOM_STEP = 5;
 
     private Timeline timeline;
 
@@ -143,11 +143,13 @@ public class GuiController {
                 float dx = (float) mouseEvent.getX() - (float) mousePos.getX();
                 float dy = (float) mouseEvent.getY() - (float) mousePos.getY();
                 float thetaY = dx / 500;
-                float theta2 = dy / 250;
+                float theta2 = dy / 500;
                 RotateCustom rotateCustom = new RotateCustom(new Vector3f(-camera.getPosition().getZ(), 0, camera.getPosition().getX()), theta2);
                 RotateY rotateY = new RotateY(thetaY);
                 Vector3f new_pos = rotateY.getMatrix3f().mul(rotateCustom.getMatrix3f()).mulV(camera.getPosition());
-                camera.setPosition(new_pos);
+                if(new_pos.getX() * camera.getPosition().getX() > 0 || new_pos.getZ() * camera.getPosition().getZ() > 0){
+                    camera.setPosition(new_pos);
+                }
                 mousePos = new Point2D((float) mouseEvent.getX(), (float) mouseEvent.getY());
             }
         });
@@ -156,14 +158,25 @@ public class GuiController {
             mousePos = new Point2D(e.getX(), e.getY());
         });
 
-
-        //anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> imageView.setWidth(newValue.doubleValue()));
-        //anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> imageView.setHeight(newValue.doubleValue()));
+        imageView.setOnScroll(scrollEvent -> {
+            float s = (float) Math.sqrt(Math.pow(camera.getPosition().getX(), 2) + Math.pow(camera.getPosition().getY(), 2) + Math.pow(camera.getPosition().getZ(), 2));
+            if (scrollEvent.getDeltaY() > 0) {
+                if (s > CAMERA_ZOOM_STEP * 2) {
+                    camera.setPosition(new Vector3f(camera.getPosition().getX() * (1 - CAMERA_ZOOM_STEP / s),
+                            camera.getPosition().getY() * (1 - CAMERA_ZOOM_STEP / s),
+                            camera.getPosition().getZ() * (1 - CAMERA_ZOOM_STEP / s)));
+                }
+            } else if(scrollEvent.getDeltaY() < 0){
+                camera.setPosition(new Vector3f(camera.getPosition().getX() * (1 + CAMERA_ZOOM_STEP / s),
+                        camera.getPosition().getY() * (1 + CAMERA_ZOOM_STEP / s),
+                        camera.getPosition().getZ() * (1 + CAMERA_ZOOM_STEP / s)));
+            }
+        });
 
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
 
-        KeyFrame frame = new KeyFrame(Duration.millis(100), event -> {
+        KeyFrame frame = new KeyFrame(Duration.millis(17), event -> {
             int width = (int) imageView.getBoundsInParent().getWidth();
             int height = (int) imageView.getBoundsInParent().getHeight();
 
@@ -185,6 +198,8 @@ public class GuiController {
             WritableImage image = new WritableImage(pixelBuffer);
             imageView.setImage(image);
         });
+
+
 
         timeline.getKeyFrames().add(frame);
         timeline.play();
@@ -280,7 +295,7 @@ public class GuiController {
 
         for (LoadedModel lm : scene.getModels()) {
             if (lm.isEditable()) {
-                lm.setScaleV(new Vector3f(x,y,z));
+                lm.setScaleV(new Vector3f(x, y, z));
             }
         }
     }
@@ -293,7 +308,7 @@ public class GuiController {
 
         for (LoadedModel lm : scene.getModels()) {
             if (lm.isEditable()) {
-                lm.setTranslateV(new Vector3f(x,y,z));
+                lm.setTranslateV(new Vector3f(x, y, z));
             }
         }
     }
@@ -306,7 +321,7 @@ public class GuiController {
 
         for (LoadedModel lm : scene.getModels()) {
             if (lm.isEditable()) {
-                lm.setRotateV(new Vector3f(x,y,z));
+                lm.setRotateV(new Vector3f(x, y, z));
             }
         }
     }
