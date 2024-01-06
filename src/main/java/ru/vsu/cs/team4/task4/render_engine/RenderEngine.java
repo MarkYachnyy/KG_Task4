@@ -58,13 +58,8 @@ public class RenderEngine {
     public static void renderScene(final int[] buffer, int width, int height,
                                    final Camera camera,
                                    final Scene scene) throws Exception {
-        float SCALE = 7f;
-        Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(new Vector3f(SCALE, SCALE, SCALE), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
-        Matrix4f viewMatrix = GraphicConveyor.lookAt(camera.getPosition(), camera.getTarget());
-        Matrix4f projectionMatrix = GraphicConveyor.perspective(camera.getFov(), camera.getAspectRatio(), camera.getNearPlane(), camera.getFarPlane());
-        Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix.getValues());
-        modelViewProjectionMatrix.mulMut(viewMatrix);
-        modelViewProjectionMatrix.mulMut(modelMatrix);
+        /*float SCALE = 7f;*/
+
 
         float[][] Z = new float[width][height];
         for (float[] row : Z) {
@@ -73,7 +68,15 @@ public class RenderEngine {
 
         for (LoadedModel loadedModel : scene.getModels()) {
             if (loadedModel.isActive()) {
+                Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate((loadedModel.getScaleV()), loadedModel.getRotateV(),
+                        loadedModel.getTranslateV());
+                Matrix4f viewMatrix = GraphicConveyor.lookAt(camera.getPosition(), camera.getTarget());
+                Matrix4f projectionMatrix = GraphicConveyor.perspective(camera.getFov(), camera.getAspectRatio(), camera.getNearPlane(), camera.getFarPlane());
+                Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix.getValues());
+                modelViewProjectionMatrix.mulMut(viewMatrix);
+                modelViewProjectionMatrix.mulMut(modelMatrix);
                 renderModel(buffer, width, height, modelViewProjectionMatrix, loadedModel.getModel(), loadedModel.getTextureARGB(), Z, scene.getLight());
+
             }
         }
     }
