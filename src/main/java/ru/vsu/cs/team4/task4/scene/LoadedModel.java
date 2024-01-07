@@ -2,9 +2,15 @@ package ru.vsu.cs.team4.task4.scene;
 
 
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
-import ru.vsu.cs.team4.task4.model.ModelTriangulated;
+import ru.vsu.cs.team4.task4.model.*;
 import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
 import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class LoadedModel {
@@ -52,8 +58,22 @@ public class LoadedModel {
 
     public LoadedModel(ModelTriangulated model, String modelPath) throws IOException {
         this.model = model;
+      
+
+    public boolean isActive(){
+        return isActive.isSelected();
+    }
+
+    public LoadedModel(Model model, String modelPath) {
+        ModelTriangulated newModel = new ModelTriangulated(model);
+        List<Vector3f> normals = NormalCalculator.recalculateNormals(newModel.getVertices(), newModel.getPolygons());
+        for (Polygon polygon : newModel.getPolygons()) {
+            polygon.setNormalIndices(new ArrayList<>(polygon.getVertexIndices()));
+        }
+        newModel.setNormals(normals);
+        this.model = newModel;
         this.modelPath = modelPath;
-        this.textureARGB = new ColorIntARGB[][]{{new ColorIntARGB(255, 255, 255, 255)}};
+        this.textureARGB = new ColorIntARGB[][]{{new ColorIntARGB(255, 255,255,255)}};
     }
 
     public String getModelName() {

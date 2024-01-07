@@ -4,10 +4,13 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
+import javafx.collections.ObservableListBase;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
@@ -21,8 +24,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.util.Duration;
 import ru.vsu.cs.team4.task4.affine.affineComposite.RotateCustom;
 import ru.vsu.cs.team4.task4.affine.affineComposite.RotateY;
@@ -38,8 +45,6 @@ import ru.vsu.cs.team4.task4.render_engine.Camera;
 import ru.vsu.cs.team4.task4.render_engine.RenderEngine;
 import ru.vsu.cs.team4.task4.scene.LoadedModel;
 import ru.vsu.cs.team4.task4.scene.Scene;
-
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.IntBuffer;
@@ -60,14 +65,18 @@ public class GuiController {
     private TitledPane transformationsPane;
 
     @FXML
-    private TableView<LoadedModel> tableView;
+    private TableView<LoadedModel> modelsTable;
+    @FXML
+    private TableColumn<LoadedModel, String> modelPathColumn;
+    @FXML
+    private TableColumn<LoadedModel, CheckBox> isActiveColumn;
+    @FXML
+    private TableColumn<LoadedModel, CheckBox> isEditableColumn;
 
     @FXML
-    private TableColumn<LoadedModel, String> modelPath;
+    private TableView<Camera> camerasTable;
+    @FXML
 
-    @FXML
-    private TableColumn<LoadedModel, CheckBox> isActive;
-    @FXML
     private TableColumn<LoadedModel, CheckBox> isEditable;
     @FXML
     private TableColumn<LoadedModel, Button> displayOptions;
@@ -80,6 +89,8 @@ public class GuiController {
 
     @FXML
     private TitledPane displayPane;
+
+    private TableColumn<Camera, HBox> cameraColumn;
 
     @FXML
     private TextField scaleX;
@@ -97,10 +108,8 @@ public class GuiController {
 
     @FXML
     private TextField rotateX;
-
     @FXML
     private TextField rotateY;
-
     @FXML
     private TextField rotateZ;
     private Model mesh = null;
@@ -111,11 +120,7 @@ public class GuiController {
 
     private Point2D mousePos;
 
-
-    private Camera camera = new Camera(
-            new Vector3f(0, 100, 100),
-            new Vector3f(0, 0, 0),
-            1.0F, 1, 0.01F, 100);
+    private final static int CAMERA_ZOOM_STEP = 5;
 
     private Timeline timeline;
 
@@ -123,16 +128,40 @@ public class GuiController {
     private void initialize() {
 
         scene = new Scene();
+        modelPathColumn.setCellValueFactory(new PropertyValueFactory<>("modelName"));
+        isActiveColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getActivationCheckbox()));
+        isEditableColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getIsEditable()));
+
+        cameraColumn.setCellValueFactory(cellData -> {
+            Button button = new Button();
+            button.setText("Choose");
+            button.setOnAction(actionEvent -> {
+                scene.setActiveCameraId(cellData.getValue().getId());
+            });
+
 
         /*modelPath.setCellValueFactory(new PropertyValueFactory<>("modelName"));
         isActive.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getActivationCheckbox()));
         isEditable.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getIsEditable()));*/
+          
+            HBox hbox = new HBox();
+            hbox.getChildren().add(button);
+            Label label = new Label();
+
+            label.setText("Camera " + cellData.getValue().getId());
+            HBox.setMargin(button, new Insets(0,10,0,10));
+            hbox.getChildren().add(label);
+            return new SimpleObjectProperty<>(hbox);
+        });
+
+        ObservableList<Camera> list = camerasTable.getItems();
+        list.addAll(scene.getCameras());
 
         transformationsPane.setVisible(false);
         displayPane.setVisible(false);
 
 
-        isActive.setCellFactory(column -> new TableCell<>() {
+        isActiveColumn.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(CheckBox checkBox, boolean empty) {
                 super.updateItem(checkBox, empty);
@@ -143,7 +172,6 @@ public class GuiController {
                 }
             }
         });
-
 
         displayOptions.setCellFactory(column -> new TableCell<>() {
             @Override
@@ -157,11 +185,12 @@ public class GuiController {
             }
         });
 
-        tableView.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+        modelsTable.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+
             if (event.getCode() == KeyCode.CONTROL) {
-                tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                modelsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
             } else if (event.getCode() == KeyCode.SHIFT) {
-                tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                modelsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
             }
         });
 
@@ -169,14 +198,17 @@ public class GuiController {
 
             @Override
             public void handle(MouseEvent mouseEvent) {
+                Camera camera = scene.getActiveCamera();
                 float dx = (float) mouseEvent.getX() - (float) mousePos.getX();
                 float dy = (float) mouseEvent.getY() - (float) mousePos.getY();
-                float thetaY = dx / 500;
-                float theta2 = dy / 250;
+                float thetaY = -dx / 500;
+                float theta2 = dy / 500;
                 RotateCustom rotateCustom = new RotateCustom(new Vector3f(-camera.getPosition().getZ(), 0, camera.getPosition().getX()), theta2);
                 RotateY rotateY = new RotateY(thetaY);
                 Vector3f new_pos = rotateY.getMatrix3f().mul(rotateCustom.getMatrix3f()).mulV(camera.getPosition());
-                camera.setPosition(new_pos);
+                if(new_pos.getX() * camera.getPosition().getX() > 0 || new_pos.getZ() * camera.getPosition().getZ() > 0){
+                    camera.setPosition(new_pos);
+                }
                 mousePos = new Point2D((float) mouseEvent.getX(), (float) mouseEvent.getY());
             }
         });
@@ -185,22 +217,45 @@ public class GuiController {
             mousePos = new Point2D(e.getX(), e.getY());
         });
 
+
+        imageView.setOnScroll(scrollEvent -> {
+            Camera camera = scene.getActiveCamera();
+            float s = camera.getPosition().len();
+            if (scrollEvent.getDeltaY() > 0) {
+                if (s > CAMERA_ZOOM_STEP * 2) {
+                    camera.setPosition(new Vector3f(camera.getPosition().getX() * (1 - CAMERA_ZOOM_STEP / s),
+                            camera.getPosition().getY() * (1 - CAMERA_ZOOM_STEP / s),
+                            camera.getPosition().getZ() * (1 - CAMERA_ZOOM_STEP / s)));
+                }
+            } else if(scrollEvent.getDeltaY() < 0){
+                camera.setPosition(new Vector3f(camera.getPosition().getX() * (1 + CAMERA_ZOOM_STEP / s),
+                        camera.getPosition().getY() * (1 + CAMERA_ZOOM_STEP / s),
+                        camera.getPosition().getZ() * (1 + CAMERA_ZOOM_STEP / s)));
+            }
+        });
+
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
 
         KeyFrame frame = new KeyFrame(Duration.millis(100), event -> {
-            int width = (int) imageView.getBoundsInParent().getWidth();
-            int height = (int) imageView.getBoundsInParent().getHeight();
+            Camera camera = scene.getActiveCamera();
+
+            int width = (int) imageView.getFitWidth();
+            int height = (int) imageView.getFitHeight();
+
+            if(width == 0 || height == 0){
+                return;
+            }
 
             IntBuffer buffer = IntBuffer.allocate(width * height);
             int[] pixels = buffer.array();
             PixelBuffer<IntBuffer> pixelBuffer = new PixelBuffer<>(width, height, buffer, PixelFormat.getIntArgbPreInstance());
 
-            camera.setAspectRatio((float) (width / height));
+            camera.setAspectRatio(1f * width / height);
 
             if (mesh != null) {
                 try {
-                    RenderEngine.renderScene(pixels, width, height, camera, scene);
+                    RenderEngine.renderScene(pixels, width, height, scene);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -211,8 +266,52 @@ public class GuiController {
             imageView.setImage(image);
         });
 
+
+
         timeline.getKeyFrames().add(frame);
         timeline.play();
+
+        anchorPane.widthProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+                imageView.setFitWidth(t1.doubleValue());
+            }
+        });
+
+        anchorPane.heightProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+                imageView.setFitHeight(t1.doubleValue());
+            }
+        });
+    }
+
+    @FXML
+    private void onClickAddCamera(){
+        scene.addCamera();
+        ObservableList<Camera> list = camerasTable.getItems();
+        list.clear();
+        list.addAll(scene.getCameras());
+    }
+
+    @FXML
+    private void onClickDeleteCamera(){
+        ObservableList<Camera> selected = camerasTable.getSelectionModel().getSelectedItems();
+        ObservableList<Camera> items = camerasTable.getItems();
+        int activeCameraId = scene.getActiveCamera().getId();
+        if(selected.size() > 0 && items.size() > 1){
+            if(selected.get(0).getId() == activeCameraId){
+                for(Camera camera: camerasTable.getItems()){
+                    if(camera.getId() != activeCameraId){
+                        scene.setActiveCameraId(camera.getId());
+                        break;
+                    }
+                }
+            }
+            scene.getCameras().remove(selected.get(0));
+            camerasTable.getItems().remove(selected.get(0));
+        }
+        scene.setActiveCameraId(camerasTable.getItems().get(0).getId());
     }
 
 
@@ -238,12 +337,8 @@ public class GuiController {
                     tv.setY(0.9999f);
                 }
             }
-            List<Vector3f> normals = NormalCalculator.recalculateNormals(mesh.getVertices(), mesh.getPolygons());
-            for (Polygon polygon : mesh.getPolygons()) {
-                polygon.setNormalIndices(new ArrayList<>(polygon.getVertexIndices()));
-            }
-            mesh.setNormals(normals);
-            LoadedModel newModel = new LoadedModel(new ModelTriangulated(mesh), "name");
+
+            LoadedModel newModel = new LoadedModel(mesh, "name");
             newModel.setModelPath(fileName.toString());
             newModel.setId(Integer.toString(scene.getModels().size()));
 
@@ -388,10 +483,10 @@ public class GuiController {
             });
 
             // Update the existing ObservableList
-            final ObservableList<LoadedModel> data = tableView.getItems();
+            final ObservableList<LoadedModel> data = modelsTable.getItems();
             data.add(newModel); // Assuming Models has a constructor
             scene.addModel(newModel);
-            tableView.setItems(data);
+            //modelsTable.setItems(data);
         } catch (IOException exception) {
             System.out.println("Wrong arguments");
         }
@@ -409,7 +504,7 @@ public class GuiController {
 
     @FXML
     private void onClickShowHideModels() {
-        tableView.setVisible(!tableView.isVisible());
+        modelsTable.setVisible(!modelsTable.isVisible());
     }
 
     @FXML
@@ -429,7 +524,11 @@ public class GuiController {
         float z = Float.parseFloat(scaleZ.getText());
 
         for (LoadedModel lm : scene.getModels()) {
+
             if (scene.containsEditable(lm.getId())) {
+
+            if (lm.isEditable()) {
+
                 lm.setScaleV(new Vector3f(x, y, z));
             }
         }
@@ -442,7 +541,11 @@ public class GuiController {
         float z = Float.parseFloat(translateZ.getText());
 
         for (LoadedModel lm : scene.getModels()) {
+
             if (scene.containsEditable(lm.getId())) {
+
+       
+
                 lm.setTranslateV(new Vector3f(x, y, z));
             }
         }
@@ -455,18 +558,23 @@ public class GuiController {
         float z = (float) Math.toRadians(Float.parseFloat(rotateZ.getText()));
 
         for (LoadedModel lm : scene.getModels()) {
+
             if (scene.containsEditable(lm.getId())) {
+
+         
+
                 lm.setRotateV(new Vector3f(x, y, z));
             }
         }
     }
 
     @FXML
-    private void deleteSelected() {
-        ObservableList<LoadedModel> selectedModels = tableView.getSelectionModel().getSelectedItems();
+    private void deleteSelectedModels() {
+        ObservableList<LoadedModel> selectedModels = modelsTable.getSelectionModel().getSelectedItems();
         // Удаляем выделенные модели из сцены и из таблицы
         scene.getModels().removeAll(selectedModels);
-        tableView.getItems().removeAll(selectedModels);
+        modelsTable.getItems().removeAll(selectedModels);
+
     }
 
     @FXML
@@ -509,35 +617,5 @@ public class GuiController {
         for (LoadedModel lm : selectedModels) {
             lm.setDisableSmoothing(!antialiasingBox.isSelected());
         }
-    }
-
-    @FXML
-    public void handleCameraForward(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, 0, -TRANSLATION));
-    }
-
-    @FXML
-    public void handleCameraBackward(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, 0, TRANSLATION));
-    }
-
-    @FXML
-    public void handleCameraLeft(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(TRANSLATION, 0, 0));
-    }
-
-    @FXML
-    public void handleCameraRight(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(-TRANSLATION, 0, 0));
-    }
-
-    @FXML
-    public void handleCameraUp(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, TRANSLATION, 0));
-    }
-
-    @FXML
-    public void handleCameraDown(ActionEvent actionEvent) {
-        camera.movePosition(new Vector3f(0, -TRANSLATION, 0));
     }
 }

@@ -10,7 +10,7 @@ public class RotateCustom implements AffineComposite {
 
     @Override
     public Matrix4f getMatrix() {
-        return null;
+        return rotationMatrix;
     }
 
     public RotateCustom(Vector3f axis, float theta) {

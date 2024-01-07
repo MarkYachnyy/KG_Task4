@@ -15,6 +15,10 @@ public class ColorIntARGB {
         this.blue = blue;
     }
 
+    public ColorIntARGB(int value) {
+        this((value >> 24) & 255, (value >> 16) & 255, (value >> 8 & 255), value & 255);
+    }
+
     public int getAlpha() {
         return alpha;
     }
@@ -31,19 +35,7 @@ public class ColorIntARGB {
         return blue;
     }
 
-    public int toInt(){
+    public int toInt() {
         return alpha << 24 | red << 16 | green << 8 | blue;
-    }
-    public ColorIntARGB(Color color) {
-        int b = (int)color.getBlue() * 255;
-        int r = (int)color.getRed() * 255;
-        int g = (int)color.getGreen() * 255;
-        int a = (int)color.getOpacity() * 255;
-
-        this.blue = b;
-        this.red = r;
-        this.green = g;
-        this.alpha = a;
-
     }
 }
