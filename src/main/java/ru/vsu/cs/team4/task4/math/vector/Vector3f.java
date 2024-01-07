@@ -12,7 +12,7 @@ public class Vector3f implements Vector<Vector3f> {
         this.z = z;
     }
 
-    public Vector3f(Vector2f v ) {
+    public Vector3f(Vector2f v) {
         this.x = v.getX();
         this.y = v.getY();
         this.z = 1;
@@ -59,6 +59,7 @@ public class Vector3f implements Vector<Vector3f> {
     public void setZ(float z) {
         this.z = z;
     }
+
     public void set(float x, float y, float z) {
         this.x = x;
         this.y = y;
@@ -172,5 +173,9 @@ public class Vector3f implements Vector<Vector3f> {
 
     public String coordstoStringSplitBySpace() {
         return x + " " + y + " " + z;
+    }
+
+    public boolean isZeroVector() {
+        return x == 0 && y == 0 && z == 0;
     }
 }

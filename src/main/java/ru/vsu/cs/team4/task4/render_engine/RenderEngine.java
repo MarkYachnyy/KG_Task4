@@ -18,7 +18,8 @@ import java.util.Arrays;
 public class RenderEngine {
     private static void renderModel(final int[] buffer, int width, int height,
                                     final Matrix4f modelViewProjectionMatrix,
-                                    final ModelTriangulated mesh, ColorIntARGB[][] textureARGB, float[][] Z, Vector3f light) {
+                                    final ModelTriangulated mesh, ColorIntARGB[][] textureARGB, float[][] Z,
+                                    Vector3f light, boolean disableMesh, boolean disableSmoothing) {
 
         for (Polygon polygon : mesh.getPolygons()) {
             Vector3f v1 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, mesh.getVertices().get(polygon.getVertexIndices().get(0)));
@@ -50,7 +51,15 @@ public class RenderEngine {
                 }
             };
 
-            Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, light, 0.5f, textureARGB);
+            if (disableMesh) {
+                Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, light, 0.5f, textureARGB, c -> c,
+                        disableSmoothing);
+            } else {
+                Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, light, 0.5f, textureARGB, new ColorIntARGB(255,
+                                0, 0, 0).toInt(),
+                        disableSmoothing);
+            }
+
         }
     }
 
@@ -67,7 +76,7 @@ public class RenderEngine {
         }
 
         for (LoadedModel loadedModel : scene.getModels()) {
-            if (loadedModel.isActive()) {
+            if (scene.containsActive(loadedModel.getId())) {
                 Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate((loadedModel.getScaleV()), loadedModel.getRotateV(),
                         loadedModel.getTranslateV());
                 Matrix4f viewMatrix = GraphicConveyor.lookAt(camera.getPosition(), camera.getTarget());
@@ -75,7 +84,8 @@ public class RenderEngine {
                 Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix.getValues());
                 modelViewProjectionMatrix.mulMut(viewMatrix);
                 modelViewProjectionMatrix.mulMut(modelMatrix);
-                renderModel(buffer, width, height, modelViewProjectionMatrix, loadedModel.getModel(), loadedModel.getTextureARGB(), Z, scene.getLight());
+                renderModel(buffer, width, height, modelViewProjectionMatrix, loadedModel.getModel(),
+                        loadedModel.getTextureARGB(), Z, scene.getLight(), loadedModel.getDisableMesh(), loadedModel.isDisableSmoothing());
 
             }
         }

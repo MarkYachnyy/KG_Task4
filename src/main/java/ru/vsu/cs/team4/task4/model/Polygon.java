@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Polygon {
-
     private ArrayList<Integer> vertexIndices;
     private ArrayList<Integer> textureVertexIndices;
     private ArrayList<Integer> normalIndices;

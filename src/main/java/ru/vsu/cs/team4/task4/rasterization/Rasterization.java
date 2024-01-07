@@ -442,7 +442,8 @@ public class Rasterization {
     }
 
     public static void fillPolygon(ZBufferPixelWriter pixelWriter, PolygonVertex v1, PolygonVertex v2, PolygonVertex v3, Vector3f light,
-                                   float ambient, ColorIntARGB[][] textureARGB) {
-        fillPolygon(pixelWriter, v1, v2, v3, light, ambient, textureARGB, c -> c, true);
+                                   float ambient, ColorIntARGB[][] textureARGB, int meshColor ,
+                                   boolean disableSmoothing) {
+        fillPolygon(pixelWriter, v1, v2, v3, light, ambient, textureARGB, c -> meshColor, disableSmoothing);
     }
 }
