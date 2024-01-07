@@ -67,17 +67,12 @@ public class GuiController {
     @FXML
     private TableView<LoadedModel> modelsTable;
     @FXML
-    private TableColumn<LoadedModel, String> modelPathColumn;
+    private TableColumn<LoadedModel, String> modelPath;
     @FXML
-    private TableColumn<LoadedModel, CheckBox> isActiveColumn;
+    private TableColumn<LoadedModel, CheckBox> isActive;
     @FXML
-    private TableColumn<LoadedModel, CheckBox> isEditableColumn;
-
-    @FXML
-    private TableView<Camera> camerasTable;
-    @FXML
-
     private TableColumn<LoadedModel, CheckBox> isEditable;
+
     @FXML
     private TableColumn<LoadedModel, Button> displayOptions;
 
@@ -90,6 +85,9 @@ public class GuiController {
     @FXML
     private TitledPane displayPane;
 
+    @FXML
+    private TableView<Camera> camerasTable;
+    @FXML
     private TableColumn<Camera, HBox> cameraColumn;
 
     @FXML
@@ -128,9 +126,7 @@ public class GuiController {
     private void initialize() {
 
         scene = new Scene();
-        modelPathColumn.setCellValueFactory(new PropertyValueFactory<>("modelName"));
-        isActiveColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getActivationCheckbox()));
-        isEditableColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getIsEditable()));
+        modelPath.setCellValueFactory(new PropertyValueFactory<>("modelName"));
 
         cameraColumn.setCellValueFactory(cellData -> {
             Button button = new Button();
@@ -161,7 +157,7 @@ public class GuiController {
         displayPane.setVisible(false);
 
 
-        isActiveColumn.setCellFactory(column -> new TableCell<>() {
+        isActive.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(CheckBox checkBox, boolean empty) {
                 super.updateItem(checkBox, empty);
@@ -458,7 +454,6 @@ public class GuiController {
                 optionsDialog.showAndWait();
             });
 
-            modelPath.setCellValueFactory(new PropertyValueFactory<>("modelName"));
             isActive.setCellValueFactory(cellData -> new SimpleObjectProperty<>(checkBox1));
             isEditable.setCellValueFactory(cellData -> new SimpleObjectProperty<>(checkBox2));
             displayOptions.setCellValueFactory(cellData -> new SimpleObjectProperty<>(displayOptionsBtn));
@@ -526,9 +521,6 @@ public class GuiController {
         for (LoadedModel lm : scene.getModels()) {
 
             if (scene.containsEditable(lm.getId())) {
-
-            if (lm.isEditable()) {
-
                 lm.setScaleV(new Vector3f(x, y, z));
             }
         }
@@ -606,14 +598,14 @@ public class GuiController {
     @FXML
     private void onClickToggleMesh() {
         if (polygonalMesh.isSelected()) {
-            ObservableList<LoadedModel> selectedModels = tableView.getSelectionModel().getSelectedItems();
+            ObservableList<LoadedModel> selectedModels = modelsTable.getSelectionModel().getSelectedItems();
             scene.getModels().removeAll(selectedModels);
         }
     }
 
     @FXML
     private void onClickSmooth() {
-        ObservableList<LoadedModel> selectedModels = tableView.getSelectionModel().getSelectedItems();
+        ObservableList<LoadedModel> selectedModels = modelsTable.getSelectionModel().getSelectedItems();
         for (LoadedModel lm : selectedModels) {
             lm.setDisableSmoothing(!antialiasingBox.isSelected());
         }

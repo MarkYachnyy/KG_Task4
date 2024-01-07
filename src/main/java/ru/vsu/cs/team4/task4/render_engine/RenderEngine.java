@@ -127,7 +127,7 @@ public class RenderEngine {
 
                 LoadedModel model = new LoadedModel(PreloadedModels.sceneCamera(), "");
 
-                renderModel(buffer, width, height, modelViewProjectionMatrix, model.getModel(), new ColorIntARGB[][]{{new ColorIntARGB(255, 255,255,255)}}, Z, scene.getLight());
+                renderModel(buffer, width, height, modelViewProjectionMatrix, model.getModel(), new ColorIntARGB[][]{{new ColorIntARGB(255, 255,255,255)}}, Z, scene.getLight(), true, true);
             }
         }
     }

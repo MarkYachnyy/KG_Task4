@@ -40,9 +40,12 @@ public class Rasterization {
         float C = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
         float D = -A * x1 - B * y1 - C * z1;
 
-        float dp0 = -Vector3f.sum(n1, n2).add(n3).normalized().dotProduct(light);
-        if(dp0 < 0) dp0 = 0;
-        float kNotSmoothed = ambient + (1-ambient) * dp0;
+        float kNotSmoothed = 0;
+        if(disableSmoothing){
+            float dp0 = -Vector3f.sum(n1, n2).add(n3).normalized().dotProduct(light);
+            if(dp0 < 0) dp0 = 0;
+            kNotSmoothed = ambient + (1-ambient) * dp0;
+        }
 
         int dxL, dyL, dxR, dyR, yL, yR, xL, xR;
         int dxL_sign, dxR_sign;

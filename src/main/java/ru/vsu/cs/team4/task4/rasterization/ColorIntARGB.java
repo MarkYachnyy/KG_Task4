@@ -38,4 +38,17 @@ public class ColorIntARGB {
     public int toInt() {
         return alpha << 24 | red << 16 | green << 8 | blue;
     }
+
+    public ColorIntARGB(Color color) {
+        int b = (int)color.getBlue() * 255;
+        int r = (int)color.getRed() * 255;
+        int g = (int)color.getGreen() * 255;
+        int a = (int)color.getOpacity() * 255;
+
+        this.blue = b;
+        this.red = r;
+        this.green = g;
+        this.alpha = a;
+
+    }
 }

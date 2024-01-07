@@ -19,9 +19,7 @@ public class LoadedModel {
     private ModelTriangulated model;
     private String modelPath;
     private boolean disableSmoothing = true;
-
     private boolean disableTexture = true;
-
     private boolean disableMesh = true;
 
 
@@ -58,10 +56,6 @@ public class LoadedModel {
 
     public LoadedModel(ModelTriangulated model, String modelPath) throws IOException {
         this.model = model;
-      
-
-    public boolean isActive(){
-        return isActive.isSelected();
     }
 
     public LoadedModel(Model model, String modelPath) {
