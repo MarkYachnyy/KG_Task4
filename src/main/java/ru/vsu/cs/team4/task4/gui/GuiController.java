@@ -7,7 +7,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableListBase;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -24,34 +23,28 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import javafx.util.Duration;
 import ru.vsu.cs.team4.task4.affine.affineComposite.RotateCustom;
 import ru.vsu.cs.team4.task4.affine.affineComposite.RotateY;
 import ru.vsu.cs.team4.task4.math.vector.Vector2f;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 import ru.vsu.cs.team4.task4.model.Model;
-import ru.vsu.cs.team4.task4.model.ModelTriangulated;
-import ru.vsu.cs.team4.task4.model.NormalCalculator;
-import ru.vsu.cs.team4.task4.model.Polygon;
 import ru.vsu.cs.team4.task4.objio.ObjReader;
 import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
 import ru.vsu.cs.team4.task4.render_engine.Camera;
 import ru.vsu.cs.team4.task4.render_engine.RenderEngine;
 import ru.vsu.cs.team4.task4.scene.LoadedModel;
 import ru.vsu.cs.team4.task4.scene.Scene;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GuiController {
     final private float TRANSLATION = 0.5F;
@@ -115,6 +108,8 @@ public class GuiController {
 
     private Color textureColor = Color.WHITE;
 
+    private ColorIntARGB[][] curTexture = new ColorIntARGB[][]{{new ColorIntARGB(255, 255,255,255)}};
+
 
     private Point2D mousePos;
 
@@ -135,11 +130,6 @@ public class GuiController {
                 scene.setActiveCameraId(cellData.getValue().getId());
             });
 
-
-        /*modelPath.setCellValueFactory(new PropertyValueFactory<>("modelName"));
-        isActive.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getActivationCheckbox()));
-        isEditable.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getIsEditable()));*/
-          
             HBox hbox = new HBox();
             hbox.getChildren().add(button);
             Label label = new Label();
@@ -383,7 +373,7 @@ public class GuiController {
                 checkBox6.setOnAction(eventTexture -> {
                     currModel.setDisableTexture(!checkBox6.isSelected());
                     if (!currModel.isDisableTexture()) {
-                        currModel.setTextureARGB(new ColorIntARGB[][]{{new ColorIntARGB(textureColor)}});
+                        currModel.setTextureARGB(curTexture);
                     } else {
                        currModel.setTextureARGB(new ColorIntARGB[][]{{new ColorIntARGB(255, 255, 255, 255)}});
                     }
@@ -401,6 +391,29 @@ public class GuiController {
                 // Create two Button elements
                 Button loadTextureBtn = new Button("LoadTexture");
                 loadTextureBtn.setId(newModel.getId());
+                loadTextureBtn.setOnAction(eventLoadTexture -> {
+                    FileChooser textureChooser = new FileChooser();
+                    textureChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG files (*.png)", "*.png"));
+                    textureChooser.setInitialDirectory(new File("./3DModels"));
+                    File textureFile = textureChooser.showOpenDialog((Stage) imageView.getScene().getWindow());
+                    if (textureFile == null) {
+                        return;
+                    }
+
+                    BufferedImage image = null;
+                    try {
+                        image = ImageIO.read(textureFile);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    ColorIntARGB[][] texture = new ColorIntARGB[image.getHeight()][image.getWidth()];
+                    for (int i = 0; i < image.getHeight(); i++) {
+                        for (int j = 0; j < image.getWidth(); j++) {
+                            texture[j][i] = new ColorIntARGB(255 << 24 | image.getRGB(j,image.getHeight() - 1 - i));
+                        }
+                    }
+                    curTexture = texture;
+                });
 
 
                 Button chooseColorToFillBtn = new Button("ChooseColorToFill");
@@ -421,6 +434,7 @@ public class GuiController {
                     dialog.setResultConverter(buttonType -> {
                         if (buttonType == ButtonType.OK) {
                             textureColor = colorPicker.getValue();
+                            curTexture = new ColorIntARGB[][]{{new ColorIntARGB(textureColor)}};
                             return dialog.getResult();
                         }
                         return null;
@@ -428,8 +442,6 @@ public class GuiController {
 
                     // Открываем диалоговое окно
                     dialog.showAndWait().ifPresent(selectedColor -> {
-                        // Выбранный цвет доступен в переменной selectedColor
-                        System.out.println("Selected Color: " + selectedColor);
                     });
 
                 });
@@ -477,11 +489,10 @@ public class GuiController {
                 }
             });
 
-            // Update the existing ObservableList
+
             final ObservableList<LoadedModel> data = modelsTable.getItems();
-            data.add(newModel); // Assuming Models has a constructor
+            data.add(newModel);
             scene.addModel(newModel);
-            //modelsTable.setItems(data);
         } catch (IOException exception) {
             System.out.println("Wrong arguments");
         }
@@ -533,11 +544,7 @@ public class GuiController {
         float z = Float.parseFloat(translateZ.getText());
 
         for (LoadedModel lm : scene.getModels()) {
-
             if (scene.containsEditable(lm.getId())) {
-
-       
-
                 lm.setTranslateV(new Vector3f(x, y, z));
             }
         }
