@@ -50,7 +50,7 @@ public class RenderEngine {
                 }
             };
 
-            Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, light, 0.4f, textureARGB, c -> c, true);
+            Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, light, 0.4f, textureARGB, c -> c, false);
         }
     }
 

@@ -142,7 +142,7 @@ public class GuiController {
             public void handle(MouseEvent mouseEvent) {
                 float dx = (float) mouseEvent.getX() - (float) mousePos.getX();
                 float dy = (float) mouseEvent.getY() - (float) mousePos.getY();
-                float thetaY = dx / 500;
+                float thetaY = -dx / 500;
                 float theta2 = dy / 500;
                 RotateCustom rotateCustom = new RotateCustom(new Vector3f(-camera.getPosition().getZ(), 0, camera.getPosition().getX()), theta2);
                 RotateY rotateY = new RotateY(thetaY);
@@ -176,7 +176,7 @@ public class GuiController {
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
 
-        KeyFrame frame = new KeyFrame(Duration.millis(17), event -> {
+        KeyFrame frame = new KeyFrame(Duration.millis(100), event -> {
             int width = (int) imageView.getBoundsInParent().getWidth();
             int height = (int) imageView.getBoundsInParent().getHeight();
 

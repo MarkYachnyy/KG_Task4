@@ -21,7 +21,7 @@ public class GraphicConveyor {
     public static Matrix4f lookAt(Vector3f eye, Vector3f target, Vector3f up) {
 
         Vector3f resultZ = Vector3f.residual(target, eye);
-        Vector3f resultX = Vector3f.crossProduct(up, resultZ);
+        Vector3f resultX = Vector3f.crossProduct(resultZ, up);
         Vector3f resultY = Vector3f.crossProduct(resultZ, resultX);
 
         resultX.normalized();
@@ -59,7 +59,7 @@ public class GraphicConveyor {
 
     public static Point2f vertexToPoint(final Vector3f vertex, final int width, final int height) {
         int x = (int) (vertex.getX() * width + width / 2.0F);
-        int y = (int) (-vertex.getY() * height + height / 2.0F);
+        int y = (int) (vertex.getY() * height + height / 2.0F);
         return new Point2f(x, y);
     }
 }

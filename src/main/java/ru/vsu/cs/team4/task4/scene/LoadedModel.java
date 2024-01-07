@@ -7,6 +7,10 @@ import ru.vsu.cs.team4.task4.model.Model;
 import ru.vsu.cs.team4.task4.model.ModelTriangulated;
 import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
 
 public class LoadedModel {
 
