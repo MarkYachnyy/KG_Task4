@@ -53,7 +53,7 @@ public class Scene {
         Camera camera = new Camera(newId,
                 new Vector3f(100, 100, 100),
                 new Vector3f(0, 0, 0),
-                1.0F, 1, 1F, 100);
+                1.0F, 1, 1F, 180);
         cameras.add(camera);
     }
 
