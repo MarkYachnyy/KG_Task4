@@ -13,6 +13,10 @@ public class ColorIntARGB {
         this.blue = blue;
     }
 
+    public ColorIntARGB(int value) {
+        this((value >> 24) & 255, (value >> 16) & 255, (value >> 8 & 255), value & 255);
+    }
+
     public int getAlpha() {
         return alpha;
     }
@@ -29,7 +33,9 @@ public class ColorIntARGB {
         return blue;
     }
 
-    public int toInt(){
+    public int toInt() {
         return alpha << 24 | red << 16 | green << 8 | blue;
     }
+
+
 }
