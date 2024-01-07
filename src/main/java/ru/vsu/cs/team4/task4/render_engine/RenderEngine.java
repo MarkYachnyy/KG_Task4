@@ -25,9 +25,20 @@ public class RenderEngine {
                                     final ModelTriangulated mesh, ColorIntARGB[][] textureARGB, float[][] Z, Vector3f light) {
 
         for (Polygon polygon : mesh.getPolygons()) {
-            Vector3f v1 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, mesh.getVertices().get(polygon.getVertexIndices().get(0)));
-            Vector3f v2 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, mesh.getVertices().get(polygon.getVertexIndices().get(1)));
-            Vector3f v3 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, mesh.getVertices().get(polygon.getVertexIndices().get(2)));
+            Vector3f v1NonProjected = mesh.getVertices().get(polygon.getVertexIndices().get(0));
+            Vector3f v2NonProjected = mesh.getVertices().get(polygon.getVertexIndices().get(1));
+            Vector3f v3NonProjected = mesh.getVertices().get(polygon.getVertexIndices().get(2));
+
+            Vector3f v1 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, v1NonProjected);
+            Vector3f v2 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, v2NonProjected);
+            Vector3f v3 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, v3NonProjected);
+
+
+            if(!(v1.getX() > -1 && v1.getX() < 1 && v1.getY() > -1 && v1.getY() < 1 && v1.getZ() > -1 && v1.getZ() < 1 ||
+                    v2.getX() > -1 && v2.getX() < 1 && v2.getY() > -1 && v2.getY() < 1 && v2.getZ() > -1 && v2.getZ() < 1 ||
+                    v3.getX() > -1 && v3.getX() < 1 && v3.getY() > -1 && v3.getY() < 1 && v3.getZ() > -1 && v3.getZ() < 1)){
+                return;
+            }
 
             Point2f p1 = GraphicConveyor.vertexToPoint(v1, width, height);
             Point2f p2 = GraphicConveyor.vertexToPoint(v2, width, height);
