@@ -3,13 +3,14 @@ package ru.vsu.cs.team4.task4.scene;
 
 import javafx.scene.control.CheckBox;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
-import ru.vsu.cs.team4.task4.model.Model;
-import ru.vsu.cs.team4.task4.model.ModelTriangulated;
+import ru.vsu.cs.team4.task4.model.*;
 import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class LoadedModel {
@@ -57,14 +58,20 @@ public class LoadedModel {
         return isActive.isSelected();
     }
 
-    public LoadedModel(ModelTriangulated model, String modelPath) {
-        this.model = model;
+    public LoadedModel(Model model, String modelPath) {
+        ModelTriangulated newModel = new ModelTriangulated(model);
+        List<Vector3f> normals = NormalCalculator.recalculateNormals(newModel.getVertices(), newModel.getPolygons());
+        for (Polygon polygon : newModel.getPolygons()) {
+            polygon.setNormalIndices(new ArrayList<>(polygon.getVertexIndices()));
+        }
+        newModel.setNormals(normals);
+        this.model = newModel;
         this.modelPath = modelPath;
         this.textureARGB = new ColorIntARGB[][]{{new ColorIntARGB(255, 255,255,255)}};
     }
 
-    public LoadedModel(ModelTriangulated model, String modelPath, CheckBox isActive) {
-        this.model = model;
+    public LoadedModel(Model model, String modelPath, CheckBox isActive) {
+        this.model = new ModelTriangulated(model);
         this.modelPath = modelPath;
         this.isActive = isActive;
     }

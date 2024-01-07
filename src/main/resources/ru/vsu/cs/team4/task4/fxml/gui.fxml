@@ -1,21 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.TitledPane?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.input.KeyCodeCombination?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.input.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.vsu.cs.team4.task4.gui.GuiController">
+<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.vsu.cs.team4.task4.gui.GuiController">
     <MenuBar prefWidth="1339.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
         <Menu mnemonicParsing="false" text="File">
             <MenuItem mnemonicParsing="false" onAction="#onOpenModelMenuItemClick" text="Load Model">
@@ -28,42 +19,10 @@
                     <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                 </accelerator>
             </MenuItem>
-            <MenuItem mnemonicParsing="false" onAction="#deleteSelected" text="Delete">
+            <MenuItem mnemonicParsing="false" onAction="#deleteSelectedModels" text="Delete">
                 <accelerator>
                     <KeyCodeCombination alt="UP" code="BACK_SPACE" control="UP" meta="UP" shift="DOWN" shortcut="UP" />
                 </accelerator></MenuItem>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Camera Options">
-            <MenuItem mnemonicParsing="false" onAction="#handleCameraForward" text="Forward">
-                <accelerator>
-                    <KeyCodeCombination alt="UP" code="UP" control="UP" meta="UP" shift="UP" shortcut="UP" />
-                </accelerator>
-            </MenuItem>
-            <MenuItem mnemonicParsing="false" onAction="#handleCameraBackward" text="Backward">
-                <accelerator>
-                    <KeyCodeCombination alt="UP" code="DOWN" control="UP" meta="UP" shift="UP" shortcut="UP" />
-                </accelerator>
-            </MenuItem>
-            <MenuItem mnemonicParsing="false" onAction="#handleCameraLeft" text="Left">
-                <accelerator>
-                    <KeyCodeCombination alt="UP" code="LEFT" control="UP" meta="UP" shift="UP" shortcut="UP" />
-                </accelerator>
-            </MenuItem>
-            <MenuItem mnemonicParsing="false" onAction="#handleCameraRight" text="Right">
-                <accelerator>
-                    <KeyCodeCombination alt="UP" code="RIGHT" control="UP" meta="UP" shift="UP" shortcut="UP" />
-                </accelerator>
-            </MenuItem>
-            <MenuItem mnemonicParsing="false" onAction="#handleCameraUp" text="Up">
-                <accelerator>
-                    <KeyCodeCombination alt="UP" code="W" control="UP" meta="UP" shift="UP" shortcut="UP" />
-                </accelerator>
-            </MenuItem>
-            <MenuItem mnemonicParsing="false" onAction="#handleCameraDown" text="Down">
-                <accelerator>
-                    <KeyCodeCombination alt="UP" code="S" control="UP" meta="UP" shift="UP" shortcut="UP" />
-                </accelerator>
-            </MenuItem>
         </Menu>
         <Menu mnemonicParsing="false" text="S/H Transformations">
             <items>
@@ -76,7 +35,7 @@
             </items>
         </Menu>
     </MenuBar>
-    <ImageView fx:id="imageView" fitHeight="876.0" fitWidth="1600.0" layoutY="24.0" pickOnBounds="true" preserveRatio="true" />
+    <ImageView fx:id="imageView" fitHeight="900.0" fitWidth="1600.0" layoutY="23.0" pickOnBounds="true" preserveRatio="true" />
     <Button layoutX="17.0" layoutY="35.0" mnemonicParsing="false" onAction="#onClickDeleteModel" prefHeight="25.0" prefWidth="72.0" text="-" />
     <Button layoutX="89.0" layoutY="35.0" mnemonicParsing="false" onAction="#onClickAddModel" prefHeight="25.0" prefWidth="72.0" text="+" />
     <BorderPane layoutX="1394.0" layoutY="25.0" prefHeight="561.0" prefWidth="250.0" AnchorPane.rightAnchor="0.0">
@@ -175,11 +134,18 @@
             </TitledPane>
         </top>
     </BorderPane>
-    <TableView fx:id="tableView" layoutX="14.0" layoutY="82.0" prefHeight="773.0" prefWidth="223.0">
+    <TableView fx:id="modelsTable" layoutX="14.0" layoutY="82.0" prefHeight="380.0" prefWidth="232.0">
         <columns>
-            <TableColumn fx:id="modelPath" prefWidth="107.0" text="Model Name" />
-            <TableColumn fx:id="isActive" prefWidth="55.0" text="IsActive" />
-            <TableColumn fx:id="isEditable" prefWidth="60.0" text="IsEditable" />
+            <TableColumn fx:id="modelPathColumn" prefWidth="107.0" text="Model Name" />
+            <TableColumn fx:id="isActiveColumn" prefWidth="55.0" text="IsActive" />
+            <TableColumn fx:id="isEditableColumn" prefWidth="69.0" text="IsEditable" />
         </columns>
     </TableView>
+   <TableView fx:id="camerasTable" layoutX="14.0" layoutY="513.0" prefHeight="200.0" prefWidth="200.0">
+     <columns>
+       <TableColumn fx:id="cameraColumn" prefWidth="199.0" text="Camera" />
+     </columns>
+   </TableView>
+   <Button layoutX="14.0" layoutY="473.0" mnemonicParsing="false" onAction="#onClickDeleteCamera" prefHeight="25.0" prefWidth="72.0" text="-" />
+   <Button layoutX="86.0" layoutY="473.0" mnemonicParsing="false" onAction="#onClickAddCamera" prefHeight="25.0" prefWidth="72.0" text="+" />
 </AnchorPane>

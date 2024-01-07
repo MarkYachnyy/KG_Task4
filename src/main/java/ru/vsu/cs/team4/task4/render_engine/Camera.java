@@ -1,17 +1,18 @@
 package ru.vsu.cs.team4.task4.render_engine;
 
-import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 
 public class Camera {
 
     public Camera(
+            final int id,
             final Vector3f position,
             final Vector3f target,
             final float fov,
             final float aspectRatio,
             final float nearPlane,
             final float farPlane) {
+        this.id = id;
         this.position = position;
         this.target = target;
         this.fov = fov;
@@ -32,20 +33,16 @@ public class Camera {
         this.aspectRatio = aspectRatio;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public Vector3f getPosition() {
         return position;
     }
 
     public Vector3f getTarget() {
         return target;
-    }
-
-    public void movePosition(final Vector3f translation) {
-        this.position.add(translation);
-    }
-
-    public void moveTarget(final Vector3f translation) {
-        this.target.add(target);
     }
 
     public float getFov() {
@@ -64,6 +61,7 @@ public class Camera {
         return farPlane;
     }
 
+    private final int id;
     private Vector3f position;
     private Vector3f target;
     private float fov;

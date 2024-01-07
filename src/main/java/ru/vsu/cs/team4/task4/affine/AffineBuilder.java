@@ -1,6 +1,7 @@
 package ru.vsu.cs.team4.task4.affine;
 
 import ru.vsu.cs.team4.task4.affine.affineComposite.*;
+import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 
 public class AffineBuilder {
     private Affine affine;
@@ -36,6 +37,11 @@ public class AffineBuilder {
 
     public AffineBuilder apply(AffineComposite affineComposite) {
         affine.add(affineComposite);
+        return this;
+    }
+
+    public AffineBuilder rotateCustom(Vector3f axis, double theta) {
+        affine.add(new RotateCustom(axis, (float) theta));
         return this;
     }
 

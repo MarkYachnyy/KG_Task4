@@ -88,5 +88,8 @@ public class ModelTriangulated extends Model {
         return polygons.size();
     }
 
-
+    @Override
+    public void setNormals(List<Vector3f> normals) {
+        this.normals = normals;
+    }
 }
