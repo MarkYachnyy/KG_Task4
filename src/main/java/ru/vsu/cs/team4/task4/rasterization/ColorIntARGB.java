@@ -1,5 +1,7 @@
 package ru.vsu.cs.team4.task4.rasterization;
 
+import javafx.scene.paint.Color;
+
 public class ColorIntARGB {
     int alpha;
     int red;
@@ -36,6 +38,4 @@ public class ColorIntARGB {
     public int toInt() {
         return alpha << 24 | red << 16 | green << 8 | blue;
     }
-
-
 }

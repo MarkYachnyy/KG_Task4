@@ -11,9 +11,13 @@ import java.util.Set;
 
 public class Scene {
 
+
+    private ArrayList<LoadedModel> models;
+    private List<String> activeModels = new ArrayList<>();
+    private List<String> editableModels = new ArrayList<>();
+
     private Set<Camera> cameras;
     private int activeCameraId;
-    private List<LoadedModel> models;
     private Vector3f light;
 
     public Scene() {
@@ -35,6 +39,37 @@ public class Scene {
     public List<LoadedModel> getModels() {
         return models;
     }
+
+
+    public void addActiveModel(String id) {
+        activeModels.add(id);
+    }
+
+    public List<String> getActiveModels() {
+        return activeModels;
+    }
+
+    public List<String> getEditableModels() {
+        return editableModels;
+    }
+
+    public void addEditableModel(String id) {
+        editableModels.add(id);
+    }
+
+    public boolean containsActive(String id) {
+        return activeModels.contains(id);
+    }
+
+    public boolean containsEditable(String id) {
+        return editableModels.contains(id);
+    }
+
+    public LoadedModel getModelByID(String id) {
+        return models.get(Integer.parseInt(id));
+    }
+
+
 
     public Set<Camera> getCameras() {
         return cameras;
@@ -60,4 +95,5 @@ public class Scene {
     public void setActiveCameraId(int id){
         this.activeCameraId = id;
     }
+
 }
