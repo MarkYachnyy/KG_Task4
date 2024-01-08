@@ -54,7 +54,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class GuiController {
-    final private float TRANSLATION = 0.5F;
 
     @FXML
     AnchorPane anchorPane;
@@ -75,15 +74,6 @@ public class GuiController {
 
     @FXML
     private TableColumn<LoadedModel, Button> displayOptions;
-
-    @FXML
-    private CheckBox polygonalMesh;
-
-    @FXML
-    private CheckBox antialiasingBox;
-
-    @FXML
-    private TitledPane displayPane;
 
     @FXML
     private TableView<Camera> camerasTable;
@@ -114,7 +104,6 @@ public class GuiController {
     @FXML
     private Canvas coordinateSystemCanvas;
 
-    private Model mesh = null;
     private Scene scene = null;
 
     private Color textureColor = Color.WHITE;
@@ -156,8 +145,6 @@ public class GuiController {
         list.addAll(scene.getCameras());
 
         transformationsPane.setVisible(false);
-        displayPane.setVisible(false);
-
 
         isActive.setCellFactory(column -> new TableCell<>() {
             @Override
@@ -255,13 +242,8 @@ public class GuiController {
 
             camera.setAspectRatio(1f * width / height);
 
-            if (mesh != null) {
-                try {
-                    RenderEngine.renderScene(pixels, width, height, scene);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            RenderEngine.renderScene(pixels, width, height, scene);
+
 
             pixelBuffer.updateBuffer(c -> null);
             WritableImage image = new WritableImage(pixelBuffer);
@@ -331,7 +313,7 @@ public class GuiController {
         Path fileName = Path.of(file.getAbsolutePath());
         try {
             String fileContent = Files.readString(fileName);
-            mesh = ObjReader.read(fileContent);
+            Model mesh = ObjReader.read(fileContent);
             for (Vector2f tv : mesh.getTextureVertices()) {
                 if (Math.abs(tv.getX() - 1) < 1E-5) {
                     tv.setX(0.9999f);
@@ -524,10 +506,6 @@ public class GuiController {
         modelsTable.setVisible(!modelsTable.isVisible());
     }
 
-    @FXML
-    private void onClickShowHideOptions() {
-        displayPane.setVisible(!displayPane.isVisible());
-    }
 
     @FXML
     private void onSaveModelMenuItemClick() {
@@ -633,48 +611,6 @@ public class GuiController {
         scene.getModels().removeAll(selectedModels);
         modelsTable.getItems().removeAll(selectedModels);
 
-    }
-
-    @FXML
-    private void onClickChooseColor() {
-        ColorPicker colorPicker = new ColorPicker();
-        colorPicker.setValue(javafx.scene.paint.Color.WHITE); // Устанавливаем начальный цвет
-
-        // Создаем диалоговое окно с цветовым пикером
-        Dialog<Color> dialog = new Dialog<>();
-        dialog.setTitle("Choose Color");
-        dialog.getDialogPane().setContent(colorPicker);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-
-        // Обработка нажатия кнопки OK
-        dialog.setResultConverter(buttonType -> {
-            if (buttonType == ButtonType.OK) {
-                return null;
-            }
-            return null;
-        });
-
-        // Открываем диалоговое окно
-        dialog.showAndWait().ifPresent(selectedColor -> {
-            // Выбранный цвет доступен в переменной selectedColor
-            //System.out.println("Selected Color: " + selectedColor);
-        });
-    }
-
-    @FXML
-    private void onClickToggleMesh() {
-        if (polygonalMesh.isSelected()) {
-            ObservableList<LoadedModel> selectedModels = modelsTable.getSelectionModel().getSelectedItems();
-            scene.getModels().removeAll(selectedModels);
-        }
-    }
-
-    @FXML
-    private void onClickSmooth() {
-        ObservableList<LoadedModel> selectedModels = modelsTable.getSelectionModel().getSelectedItems();
-        for (LoadedModel lm : selectedModels) {
-            lm.setDisableSmoothing(!antialiasingBox.isSelected());
-        }
     }
 
     private void drawCoordinateSystem() {

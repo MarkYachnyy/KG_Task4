@@ -27,7 +27,7 @@ public class Simple3DViewer extends Application {
         Image image = new Image(iconStream);
         stage.getIcons().add(image);
 
-        stage.setTitle("Simple3DViewer");
+        stage.setTitle("Nah, I'd render");
         stage.setScene(scene);
         stage.show();
     }

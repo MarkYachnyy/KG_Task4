@@ -81,7 +81,7 @@ public class RenderEngine {
 
 
     public static void renderScene(final int[] buffer, int width, int height,
-                                   final Scene scene) throws Exception {
+                                   final Scene scene){
 
         Camera activeCamera = scene.getActiveCamera();
 
@@ -130,10 +130,13 @@ public class RenderEngine {
 
                 Matrix4f viewProjectionMatrix = new Matrix4f(projectionMatrix.getValues());
                 viewProjectionMatrix.mulMut(viewMatrix);
+                try {
+                    Model model = GraphicConveyor.multiplyModelByAffineMatrix(new LoadedModel(PreloadedModels.sceneCamera(), "").getModel(), affine.getMatrix(), rotateMatrix);
+                    renderModel(buffer, width, height, viewProjectionMatrix, model, new ColorIntARGB[][]{{new ColorIntARGB(255, 255, 255, 255)}}, Z, scene.getLight(), true, true);
+                } catch (Exception e){
+                    e.printStackTrace();
 
-                Model model = GraphicConveyor.multiplyModelByAffineMatrix(new LoadedModel(PreloadedModels.sceneCamera(), "").getModel(), affine.getMatrix(), rotateMatrix);
-
-                renderModel(buffer, width, height, viewProjectionMatrix, model, new ColorIntARGB[][]{{new ColorIntARGB(255, 255, 255, 255)}}, Z, scene.getLight(), true, true);
+                }
             }
         }
     }

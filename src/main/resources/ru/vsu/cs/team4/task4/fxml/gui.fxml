@@ -29,7 +29,6 @@
       <Menu mnemonicParsing="false" text="Show/Hide Options">
         <items>
           <MenuItem mnemonicParsing="false" onAction="#onClickShowHide" text="Transformation" />
-            <MenuItem mnemonicParsing="false" onAction="#onClickShowHideOptions" text="Display Options" />
             <MenuItem mnemonicParsing="false" onAction="#onClickShowHideModels" text="Models" />
         </items>
       </Menu>
@@ -139,23 +138,6 @@
          <TableColumn fx:id="displayOptions" prefWidth="91.0" text="DisplayOptions" />
         </columns>
    </TableView>
-   <BorderPane layoutX="1350.0" layoutY="586.0" prefHeight="314.0" prefWidth="250.0" AnchorPane.rightAnchor="0.0">
-      <top>
-         <TitledPane fx:id="displayPane" animated="false" prefHeight="315.0" prefWidth="250.0" text="Display Options" BorderPane.alignment="CENTER">
-           <content>
-             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                  <children>
-                     <CheckBox fx:id="polygonalMesh" layoutX="14.0" layoutY="20.0" mnemonicParsing="false" onAction="#onClickToggleMesh" text="Polygonal Mesh" />
-                     <CheckBox layoutX="14.0" layoutY="56.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="94.0" text="Show Texture" />
-                     <CheckBox fx:id="antialiasingBox" layoutX="14.0" layoutY="90.0" mnemonicParsing="false" onAction="#onClickSmooth" text="Antialiasing" />
-                     <Button layoutX="14.0" layoutY="120.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="94.0" text="LoadTexture" />
-                     <Button layoutX="15.0" layoutY="158.0" mnemonicParsing="false" onAction="#onClickChooseColor" prefHeight="25.0" prefWidth="115.0" text="ChooseColorToFill" />
-                  </children>
-               </AnchorPane>
-           </content>
-         </TitledPane>
-      </top>
-   </BorderPane>
     
    <TableView fx:id="camerasTable" layoutX="14.0" layoutY="513.0" prefHeight="200.0" prefWidth="283.0">
      <columns>
