@@ -2,9 +2,7 @@ package ru.vsu.cs.team4.task4.render_engine;
 
 import ru.vsu.cs.team4.task4.affine.AffineBuilder;
 import ru.vsu.cs.team4.task4.affine.affineComposite.Affine;
-import ru.vsu.cs.team4.task4.affine.affineComposite.RotateCustom;
-import ru.vsu.cs.team4.task4.affine.affineComposite.RotateY;
-import ru.vsu.cs.team4.task4.math.matrix.Matrix3f;
+import ru.vsu.cs.team4.task4.model.Model;
 import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
 import ru.vsu.cs.team4.task4.rasterization.PolygonVertex;
 import ru.vsu.cs.team4.task4.scene.LoadedModel;
@@ -13,7 +11,6 @@ import ru.vsu.cs.team4.task4.math.Point2f;
 import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
 import ru.vsu.cs.team4.task4.math.vector.Vector2f;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
-import ru.vsu.cs.team4.task4.model.ModelTriangulated;
 import ru.vsu.cs.team4.task4.model.Polygon;
 import ru.vsu.cs.team4.task4.rasterization.ZBufferPixelWriter;
 import ru.vsu.cs.team4.task4.rasterization.Rasterization;
@@ -22,8 +19,8 @@ import java.util.Arrays;
 
 public class RenderEngine {
     private static void renderModel(final int[] buffer, int width, int height,
-                                    final Matrix4f modelViewProjectionMatrix, final Matrix3f rotateMatrix,
-                                    final ModelTriangulated mesh, ColorIntARGB[][] textureARGB, float[][] Z,
+                                    final Matrix4f ViewProjectionMatrix, /*final Matrix3f rotateMatrix,*/
+                                    final Model mesh, ColorIntARGB[][] textureARGB, float[][] Z,
                                     Vector3f light, boolean disableMesh, boolean disableSmoothing) {
 
         for (Polygon polygon : mesh.getPolygons()) {
@@ -31,9 +28,9 @@ public class RenderEngine {
             Vector3f v2NP = mesh.getVertices().get(polygon.getVertexIndices().get(1));
             Vector3f v3NP = mesh.getVertices().get(polygon.getVertexIndices().get(2));
 
-            Vector3f v1 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, v1NP);
-            Vector3f v2 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, v2NP);
-            Vector3f v3 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, v3NP);
+            Vector3f v1 = GraphicConveyor.multiplyMVPMatrixByVertex(ViewProjectionMatrix, v1NP);
+            Vector3f v2 = GraphicConveyor.multiplyMVPMatrixByVertex(ViewProjectionMatrix, v2NP);
+            Vector3f v3 = GraphicConveyor.multiplyMVPMatrixByVertex(ViewProjectionMatrix, v3NP);
 
 
             if (!(v1.getX() > -1 && v1.getX() < 1 && v1.getY() > -1 && v1.getY() < 1 && v1.getZ() > -1 && v1.getZ() < 1 ||
@@ -50,9 +47,9 @@ public class RenderEngine {
             Vector2f vt2 = mesh.getTextureVertices().get(polygon.getTextureVertexIndices().get(1));
             Vector2f vt3 = mesh.getTextureVertices().get(polygon.getTextureVertexIndices().get(2));
 
-            Vector3f n1 = rotateMatrix.mulV(mesh.getNormals().get(polygon.getNormalIndices().get(0)));
-            Vector3f n2 = rotateMatrix.mulV(mesh.getNormals().get(polygon.getNormalIndices().get(1)));
-            Vector3f n3 = rotateMatrix.mulV(mesh.getNormals().get(polygon.getNormalIndices().get(2)));
+            Vector3f n1 = mesh.getNormals().get(polygon.getNormalIndices().get(0));
+            Vector3f n2 = mesh.getNormals().get(polygon.getNormalIndices().get(1));
+            Vector3f n3 = mesh.getNormals().get(polygon.getNormalIndices().get(2));
 
             PolygonVertex pv1 = new PolygonVertex(p1.getX(), p1.getY(), v1.getZ(), vt1.getX(), vt1.getY(), n1);
             PolygonVertex pv2 = new PolygonVertex(p2.getX(), p2.getY(), v2.getZ(), vt2.getX(), vt2.getY(), n2);
@@ -69,12 +66,12 @@ public class RenderEngine {
 
 
             if (disableMesh) {
-                Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, (disableSmoothing ? Vector3f.crossProduct(Vector3f.residual(rotateMatrix.mulV(v2NP), rotateMatrix.mulV(v1NP)),
-                                Vector3f.residual(rotateMatrix.mulV(v3NP), rotateMatrix.mulV(v1NP))).normalized() : null), textureARGB, light, 0.5f, c -> c,
+                Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, (disableSmoothing ? Vector3f.crossProduct(Vector3f.residual(v2NP, v1NP),
+                                Vector3f.residual(v3NP, v1NP)).normalized() : null), textureARGB, light, 0.5f, c -> c,
                         disableSmoothing);
             } else {
-                Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, (disableSmoothing ? Vector3f.crossProduct(Vector3f.residual(rotateMatrix.mulV(v2NP), rotateMatrix.mulV(v1NP)),
-                                Vector3f.residual(rotateMatrix.mulV(v3NP), rotateMatrix.mulV(v1NP))).normalized() : null), light, 0.5f,
+                Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, (disableSmoothing ? Vector3f.crossProduct(Vector3f.residual(v2NP, v1NP),
+                                Vector3f.residual(v3NP, v1NP)).normalized() : null), light, 0.5f,
                         textureARGB, new ColorIntARGB(255, 0, 0, 0).toInt(), disableSmoothing);
             }
 
@@ -98,17 +95,18 @@ public class RenderEngine {
 
         for (LoadedModel loadedModel : scene.getModels()) {
             if (scene.containsActive(loadedModel.getId())) {
-                Matrix4f rotateMatrix = GraphicConveyor.rotateScaleTranslate(new Vector3f(1, 1, 1), loadedModel.getRotateV(), new Vector3f(0, 0, 0));
 
-                Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate((loadedModel.getScaleV()), loadedModel.getRotateV(),
+                Matrix4f rotateMatrix = new AffineBuilder().rotateX(loadedModel.getRotateV().getX()).rotateY(loadedModel.getRotateV().getY()).rotateZ(loadedModel.getRotateV().getZ()).build().getMatrix();
+
+                Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(loadedModel.getScaleV(), loadedModel.getRotateV(),
                         loadedModel.getTranslateV());
 
-                Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix.getValues());
-                modelViewProjectionMatrix.mulMut(viewMatrix);
-                modelViewProjectionMatrix.mulMut(modelMatrix);
-                renderModel(buffer, width, height, modelViewProjectionMatrix,
-                        rotateMatrix.getMatrix3f(),
-                        loadedModel.getModel(),
+                Matrix4f ViewProjectionMatrix = new Matrix4f(projectionMatrix.getValues());
+                ViewProjectionMatrix.mulMut(viewMatrix);
+
+                Model model = GraphicConveyor.multiplyModelByAffineMatrix(loadedModel.getModel(), modelMatrix, rotateMatrix);
+                renderModel(buffer, width, height, ViewProjectionMatrix,
+                        model,
                         (loadedModel.getDisableTexture() ? new ColorIntARGB[][]{{new ColorIntARGB(255, 255, 255, 255)}} : loadedModel.getTextureARGB()),
                         Z, scene.getLight(), loadedModel.getDisableMesh(), loadedModel.isDisableSmoothing());
 
@@ -128,15 +126,14 @@ public class RenderEngine {
                         rotateCustom(new Vector3f(-camera.getPosition().getZ(), 0, camera.getPosition().getX()), thetaCustom).
                         move(position.getX(), position.getY(), position.getZ()).
                         build();
-                Matrix3f rotateMatrix = new AffineBuilder().rotateY(thetaY).rotateCustom(new Vector3f(-camera.getPosition().getZ(), 0, camera.getPosition().getX()), thetaCustom).build().getMatrix().getMatrix3f();
-                Matrix4f modelViewProjectionMatrix = new Matrix4f(projectionMatrix.getValues());
-                modelViewProjectionMatrix.mulMut(viewMatrix);
-                modelViewProjectionMatrix.mulMut(affine.getMatrix());
+                Matrix4f rotateMatrix = new AffineBuilder().rotateY(thetaY).rotateCustom(new Vector3f(-camera.getPosition().getZ(), 0, camera.getPosition().getX()), thetaCustom).build().getMatrix();
 
-                LoadedModel model = new LoadedModel(PreloadedModels.sceneCamera(), "");
+                Matrix4f viewProjectionMatrix = new Matrix4f(projectionMatrix.getValues());
+                viewProjectionMatrix.mulMut(viewMatrix);
 
-                renderModel(buffer, width, height, modelViewProjectionMatrix, rotateMatrix,
-                        model.getModel(), new ColorIntARGB[][]{{new ColorIntARGB(255, 255, 255, 255)}}, Z, scene.getLight(), true, true);
+                Model model = GraphicConveyor.multiplyModelByAffineMatrix(new LoadedModel(PreloadedModels.sceneCamera(), "").getModel(), affine.getMatrix(), rotateMatrix);
+
+                renderModel(buffer, width, height, viewProjectionMatrix, model, new ColorIntARGB[][]{{new ColorIntARGB(255, 255, 255, 255)}}, Z, scene.getLight(), true, true);
             }
         }
     }

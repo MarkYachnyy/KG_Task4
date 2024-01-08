@@ -28,6 +28,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import ru.vsu.cs.team4.task4.affine.AffineBuilder;
 import ru.vsu.cs.team4.task4.affine.affineComposite.RotateCustom;
 import ru.vsu.cs.team4.task4.affine.affineComposite.RotateY;
 import ru.vsu.cs.team4.task4.math.Point2f;
@@ -36,6 +37,7 @@ import ru.vsu.cs.team4.task4.math.vector.Vector2f;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 import ru.vsu.cs.team4.task4.model.Model;
 import ru.vsu.cs.team4.task4.objio.ObjReader;
+import ru.vsu.cs.team4.task4.objio.ObjWriter;
 import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
 import ru.vsu.cs.team4.task4.render_engine.Camera;
 import ru.vsu.cs.team4.task4.render_engine.GraphicConveyor;
@@ -116,9 +118,6 @@ public class GuiController {
     private Scene scene = null;
 
     private Color textureColor = Color.WHITE;
-
-    private ColorIntARGB[][] curTexture = new ColorIntARGB[][]{{new ColorIntARGB(255, 255, 255, 255)}};
-
 
     private Point2D mousePos;
 
@@ -414,6 +413,8 @@ public class GuiController {
                     try {
                         image = ImageIO.read(textureFile);
                     } catch (IOException e) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Couldn't read texture file", ButtonType.OK);
+                        alert.showAndWait();
                         throw new RuntimeException(e);
                     }
                     ColorIntARGB[][] texture = new ColorIntARGB[image.getHeight()][image.getWidth()];
@@ -507,7 +508,8 @@ public class GuiController {
             data.add(newModel);
             scene.addModel(newModel);
         } catch (IOException exception) {
-            System.out.println("Wrong arguments");
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Wrong file format. Couldn't read model", ButtonType.OK);
+            alert.showAndWait();
         }
     }
 
@@ -530,48 +532,91 @@ public class GuiController {
     @FXML
     private void onSaveModelMenuItemClick() {
 
-    }
 
-    @FXML
-    private void onClickScale() {
-        float x = Float.parseFloat(scaleXTextField.getText());
-        float y = Float.parseFloat(scaleYTextField.getText());
-        float z = Float.parseFloat(scaleZTextField.getText());
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
+        fileChooser.setInitialDirectory(new File("./3DModels"));
+        File file = fileChooser.showOpenDialog((Stage) imageView.getScene().getWindow());
+        if (file == null) {
+            return;
+        }
 
-        for (LoadedModel lm : scene.getModels()) {
+        try {
+            ObservableList<LoadedModel> selectedModels = modelsTable.getSelectionModel().getSelectedItems();
+            if(selectedModels.size() == 0) return;
+            Model res = Model.mergeModels(selectedModels.stream().
+                    map(loadedModel -> {
+                        Matrix4f rotateMatrix = new AffineBuilder().rotateX(loadedModel.getRotateV().getX()).rotateY(loadedModel.getRotateV().getY()).rotateZ(loadedModel.getRotateV().getZ()).build().getMatrix();
 
-            if (scene.containsEditable(lm.getId())) {
-                lm.getScaleV().setX(lm.getScaleV().getX() * x);
-                lm.getScaleV().setY(lm.getScaleV().getY() * y);
-                lm.getScaleV().setZ(lm.getScaleV().getZ() * z);
-            }
+                        Matrix4f modelMatrix = GraphicConveyor.rotateScaleTranslate(loadedModel.getScaleV(), loadedModel.getRotateV(),
+                                loadedModel.getTranslateV());
+                        return GraphicConveyor.multiplyModelByAffineMatrix(loadedModel.getModel(), modelMatrix, rotateMatrix);
+                    }).
+                    toArray(Model[]::new));
+            ObjWriter.write(res, file.getPath());
+        } catch (Exception exception) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Couldn't write into the file", ButtonType.OK);
+            alert.showAndWait();
+            exception.printStackTrace();
         }
     }
 
     @FXML
-    private void onClickTranslate() {
-        float x = Float.parseFloat(translateXTextField.getText());
-        float y = Float.parseFloat(translateYTextField.getText());
-        float z = Float.parseFloat(translateZTextField.getText());
+    private void onClickScale() {
+        try {
+            float x = Float.parseFloat(scaleXTextField.getText());
+            float y = Float.parseFloat(scaleYTextField.getText());
+            float z = Float.parseFloat(scaleZTextField.getText());
 
-        for (LoadedModel lm : scene.getModels()) {
-            if (scene.containsEditable(lm.getId())) {
-                lm.setTranslateV(lm.getTranslateV().add(new Vector3f(x, y, z)));
+            for (LoadedModel lm : scene.getModels()) {
+
+                if (scene.containsEditable(lm.getId())) {
+                    lm.getScaleV().setX(lm.getScaleV().getX() * x);
+                    lm.getScaleV().setY(lm.getScaleV().getY() * y);
+                    lm.getScaleV().setZ(lm.getScaleV().getZ() * z);
+                }
             }
+        } catch (Exception e){
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Wrong number format!", ButtonType.OK);
+            alert.showAndWait();
+        }
+
+    }
+
+    @FXML
+    private void onClickTranslate() {
+        try{
+            float x = Float.parseFloat(translateXTextField.getText());
+            float y = Float.parseFloat(translateYTextField.getText());
+            float z = Float.parseFloat(translateZTextField.getText());
+
+            for (LoadedModel lm : scene.getModels()) {
+                if (scene.containsEditable(lm.getId())) {
+                    lm.setTranslateV(lm.getTranslateV().add(new Vector3f(x, y, z)));
+                }
+            }
+        } catch (Exception e){
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Wrong number format!", ButtonType.OK);
+            alert.showAndWait();
         }
     }
 
     @FXML
     private void onClickRotate() {
-        float x = (float) Math.toRadians(Float.parseFloat(rotateXTextField.getText()));
-        float y = (float) Math.toRadians(Float.parseFloat(rotateYTextField.getText()));
-        float z = (float) Math.toRadians(Float.parseFloat(rotateZTextField.getText()));
+        try {
+            float x = (float) Math.toRadians(Float.parseFloat(rotateXTextField.getText()));
+            float y = (float) Math.toRadians(Float.parseFloat(rotateYTextField.getText()));
+            float z = (float) Math.toRadians(Float.parseFloat(rotateZTextField.getText()));
 
-        for (LoadedModel lm : scene.getModels()) {
+            for (LoadedModel lm : scene.getModels()) {
 
-            if (scene.containsEditable(lm.getId())) {
-                lm.setRotateV(lm.getRotateV().add(new Vector3f(x, y, z)));
+                if (scene.containsEditable(lm.getId())) {
+                    lm.setRotateV(lm.getRotateV().add(new Vector3f(x, y, z)));
+                }
             }
+        } catch (Exception e){
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Wrong number format!", ButtonType.OK);
+            alert.showAndWait();
         }
     }
 
@@ -581,12 +626,6 @@ public class GuiController {
         // Удаляем выделенные модели из сцены и из таблицы
         scene.getModels().removeAll(selectedModels);
         modelsTable.getItems().removeAll(selectedModels);
-
-    }
-
-    @FXML
-    private void saveSelectedModels(){
-        ObservableList<LoadedModel> selectedModels = modelsTable.getSelectionModel().getSelectedItems();
 
     }
 
@@ -612,7 +651,7 @@ public class GuiController {
         // Открываем диалоговое окно
         dialog.showAndWait().ifPresent(selectedColor -> {
             // Выбранный цвет доступен в переменной selectedColor
-            System.out.println("Selected Color: " + selectedColor);
+            //System.out.println("Selected Color: " + selectedColor);
         });
     }
 

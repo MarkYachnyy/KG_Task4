@@ -1,13 +1,18 @@
 package ru.vsu.cs.team4.task4.render_engine;
 
 import ru.vsu.cs.team4.task4.affine.AffineBuilder;
+import ru.vsu.cs.team4.task4.affine.affineComposite.Affine;
 import ru.vsu.cs.team4.task4.math.Point2f;
 import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
+import ru.vsu.cs.team4.task4.math.vector.Vector2f;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
+import ru.vsu.cs.team4.task4.math.vector.Vector4f;
+import ru.vsu.cs.team4.task4.model.Model;
+import ru.vsu.cs.team4.task4.model.Polygon;
 
 public class GraphicConveyor {
 
-    public static Matrix4f rotateScaleTranslate(Vector3f scaleV, Vector3f rotateV, Vector3f translateV) throws Exception {
+    public static Matrix4f rotateScaleTranslate(Vector3f scaleV, Vector3f rotateV, Vector3f translateV){
         AffineBuilder affineBuilder = new AffineBuilder().scale(scaleV.getX(), scaleV.getY(), scaleV.getZ());
         affineBuilder.rotateX(rotateV.getX()).rotateY(rotateV.getY()).rotateZ(rotateV.getZ());
         affineBuilder.move(translateV.getX(), translateV.getY(), translateV.getZ());
@@ -61,5 +66,26 @@ public class GraphicConveyor {
         int x = (int) (vertex.getX() * width + width / 2.0F);
         int y = (int) (vertex.getY() * height + height / 2.0F);
         return new Point2f(x, y);
+    }
+
+    public static Model multiplyModelByAffineMatrix(Model model, Matrix4f affineMatrix, Matrix4f rotateMatrix){
+        Model res = new Model();
+        for(Polygon polygon: model.getPolygons()){
+            Polygon newP = new Polygon(polygon);
+            //System.out.println(polygon.getVertexIndices().size());
+            res.addPolygon(newP);
+        }
+        for(Vector3f vertex: model.getVertices()){
+            Vector4f vMultiplied = affineMatrix.mulV(new Vector4f(vertex));
+            res.addVertex(new Vector3f(vMultiplied.getX(), vMultiplied.getY(), vMultiplied.getZ()));
+        }
+        for(Vector2f tv: model.getTextureVertices()){
+            res.addTextureVertex(new Vector2f(tv.getX(), tv.getY()));
+        }
+        for(Vector3f normal: model.getNormals()){
+            Vector4f nMultiplied = rotateMatrix.mulV(new Vector4f(normal));
+            res.addNormal(new Vector3f(nMultiplied.getX(), nMultiplied.getY(), nMultiplied.getZ()));
+        }
+        return res;
     }
 }

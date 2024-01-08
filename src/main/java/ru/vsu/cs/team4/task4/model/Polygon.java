@@ -18,6 +18,13 @@ public class Polygon {
         normalIndices = new ArrayList<Integer>();
     }
 
+    public Polygon(Polygon polygon){
+        this();
+        this.vertexIndices.addAll(polygon.getVertexIndices());
+        this.textureVertexIndices.addAll(polygon.getTextureVertexIndices());
+        this.normalIndices.addAll(polygon.getNormalIndices());
+    }
+
     public boolean hasTexture(){
         return textureVertexIndices == null || textureVertexIndices.size() == 0;
     }

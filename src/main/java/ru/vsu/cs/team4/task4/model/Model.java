@@ -5,6 +5,7 @@ import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Model {
 
@@ -149,7 +150,29 @@ public class Model {
         return maxLength;
     }
 
-//    public static Model mergeModels(){
-//
-//    }
+    public static Model mergeModels(Model... models){
+        Model res = new Model();
+        for(Model model: models){
+            int vertexCount = res.getVertices().size();
+            int textureVertexCount = res.getTextureVertices().size();
+            int normalCount = res.getNormals().size();
+            for(Vector3f vertex: model.getVertices()){
+                res.addVertex(vertex);
+            }
+            for(Vector2f tv: model.getTextureVertices()){
+                res.addTextureVertex(tv);
+            }
+            for(Vector3f normal: model.getNormals()){
+                res.addNormal(normal);
+            }
+            for(Polygon polygon: model.getPolygons()){
+                Polygon newPolygon = new Polygon();
+                newPolygon.setVertexIndices(polygon.getVertexIndices().stream().map(i -> i + vertexCount).collect(Collectors.toList()));
+                newPolygon.setTextureVertexIndices(polygon.getTextureVertexIndices().stream().map(i -> i + textureVertexCount).collect(Collectors.toList()));
+                newPolygon.setVertexIndices(polygon.getNormalIndices().stream().map(i -> i + normalCount).collect(Collectors.toList()));
+                res.addPolygon(newPolygon);
+            }
+        }
+        return res;
+    }
 }
