@@ -1,6 +1,5 @@
 package ru.vsu.cs.team4.task4.rasterization;
 
-import ru.vsu.cs.team4.task4.math.vector.Vector;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 
 import java.util.function.Function;

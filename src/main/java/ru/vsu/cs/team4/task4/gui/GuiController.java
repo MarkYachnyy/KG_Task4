@@ -515,12 +515,6 @@ public class GuiController {
     private void onClickShowHide() {
         transformationsPane.setVisible(!transformationsPane.isVisible());
         transformationsPane.setManaged(!transformationsPane.isVisible());
-
-    }
-
-    @FXML
-    private void onClickDeleteModel() {
-
     }
 
     @FXML
@@ -547,7 +541,9 @@ public class GuiController {
         for (LoadedModel lm : scene.getModels()) {
 
             if (scene.containsEditable(lm.getId())) {
-                lm.setScaleV(new Vector3f(x, y, z));
+                lm.getScaleV().setX(lm.getScaleV().getX() * x);
+                lm.getScaleV().setY(lm.getScaleV().getY() * y);
+                lm.getScaleV().setZ(lm.getScaleV().getZ() * z);
             }
         }
     }
@@ -560,7 +556,7 @@ public class GuiController {
 
         for (LoadedModel lm : scene.getModels()) {
             if (scene.containsEditable(lm.getId())) {
-                lm.setTranslateV(new Vector3f(x, y, z));
+                lm.setTranslateV(lm.getTranslateV().add(new Vector3f(x, y, z)));
             }
         }
     }
@@ -574,9 +570,7 @@ public class GuiController {
         for (LoadedModel lm : scene.getModels()) {
 
             if (scene.containsEditable(lm.getId())) {
-
-
-                lm.setRotateV(new Vector3f(x, y, z));
+                lm.setRotateV(lm.getRotateV().add(new Vector3f(x, y, z)));
             }
         }
     }
@@ -587,6 +581,12 @@ public class GuiController {
         // Удаляем выделенные модели из сцены и из таблицы
         scene.getModels().removeAll(selectedModels);
         modelsTable.getItems().removeAll(selectedModels);
+
+    }
+
+    @FXML
+    private void saveSelectedModels(){
+        ObservableList<LoadedModel> selectedModels = modelsTable.getSelectionModel().getSelectedItems();
 
     }
 
@@ -638,7 +638,7 @@ public class GuiController {
         double LETTER_HALF_WIDTH = 3;
 
         coordinateSystemCanvas.getGraphicsContext2D().setFill(Color.WHITE);
-        coordinateSystemCanvas.getGraphicsContext2D().fillOval(0,0, coordinateSystemCanvas.getWidth(), coordinateSystemCanvas.getHeight());
+        coordinateSystemCanvas.getGraphicsContext2D().fillOval(0, 0, coordinateSystemCanvas.getWidth(), coordinateSystemCanvas.getHeight());
 
         Vector3f x = new Vector3f(0.15f, 0, 0);
         Vector3f y = new Vector3f(0, 0.15f, 0);
@@ -651,9 +651,9 @@ public class GuiController {
         Vector3f yp = GraphicConveyor.multiplyMVPMatrixByVertex(viewProjectionMatrix, y);
         Vector3f zp = GraphicConveyor.multiplyMVPMatrixByVertex(viewProjectionMatrix, z);
 
-        Point2f xLetterP = GraphicConveyor.vertexToPoint(Vector3f.mul(xp, 1.4f), (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight()) ;
-        Point2f yLetterP = GraphicConveyor.vertexToPoint(Vector3f.mul(yp, 1.4f), (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight()) ;
-        Point2f zLetterP = GraphicConveyor.vertexToPoint(Vector3f.mul(zp, 1.4f), (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight()) ;
+        Point2f xLetterP = GraphicConveyor.vertexToPoint(Vector3f.mul(xp, 1.4f), (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight());
+        Point2f yLetterP = GraphicConveyor.vertexToPoint(Vector3f.mul(yp, 1.4f), (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight());
+        Point2f zLetterP = GraphicConveyor.vertexToPoint(Vector3f.mul(zp, 1.4f), (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight());
 
         Point2f xpOnScreen = GraphicConveyor.vertexToPoint(xp, (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight());
         Point2f ypOnScreen = GraphicConveyor.vertexToPoint(yp, (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight());

@@ -148,4 +148,8 @@ public class Model {
 
         return maxLength;
     }
+
+//    public static Model mergeModels(){
+//
+//    }
 }

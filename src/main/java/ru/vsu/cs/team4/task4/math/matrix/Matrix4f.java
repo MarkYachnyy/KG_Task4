@@ -208,4 +208,14 @@ public class Matrix4f implements Matrix<Matrix4f>{
         }
         return res.toString();
     }
+
+    public Matrix3f getMatrix3f(){
+        float[][] res = new float[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                res[i][j] = this.get(i,j);
+            }
+        }
+        return new Matrix3f(res);
+    }
 }

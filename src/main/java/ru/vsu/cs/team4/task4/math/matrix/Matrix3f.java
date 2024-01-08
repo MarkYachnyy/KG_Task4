@@ -2,6 +2,8 @@ package ru.vsu.cs.team4.task4.math.matrix;
 
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 
+import java.util.Arrays;
+
 public class Matrix3f implements Matrix<Matrix3f> {
 
     private static final int LENGTH = 9;
@@ -209,6 +211,15 @@ public class Matrix3f implements Matrix<Matrix3f> {
             matrix[i / length][i % length] = arr[i];
         }
         return matrix;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder res = new StringBuilder();
+        for (float[] f: this.getValues()){
+            res.append(Arrays.toString(f)).append('\n');
+        }
+        return res.toString();
     }
 
 }
