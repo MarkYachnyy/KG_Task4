@@ -7,8 +7,8 @@ import java.util.function.Function;
 
 public class Rasterization {
 
-    public static void fillPolygon(ZBufferPixelWriter pixelWriter, PolygonVertex v1, PolygonVertex v2, PolygonVertex v3, Vector3f light,
-                                   float ambient, ColorIntARGB[][] textureARGB, Function<Integer, Integer> borderColorTransfiguration, boolean disableSmoothing) {
+    public static void fillPolygon(ZBufferPixelWriter pixelWriter, PolygonVertex v1, PolygonVertex v2, PolygonVertex v3, Vector3f normalToPolygon, ColorIntARGB[][] textureARGB, Vector3f light,
+                                   float ambient, Function<Integer, Integer> borderColorTransfiguration, boolean disableSmoothing) {
 
         if (v1.getY() > v2.getY()) {
             PolygonVertex temp = v1;
@@ -41,10 +41,10 @@ public class Rasterization {
         float D = -A * x1 - B * y1 - C * z1;
 
         float kNotSmoothed = 0;
-        if(disableSmoothing){
-            float dp0 = -Vector3f.sum(n1, n2).add(n3).normalized().dotProduct(light);
-            if(dp0 < 0) dp0 = 0;
-            kNotSmoothed = ambient + (1-ambient) * dp0;
+        if (disableSmoothing) {
+            float dp0 = -normalToPolygon.dotProduct(light);
+            if (dp0 < 0) dp0 = 0;
+            kNotSmoothed = ambient + (1 - ambient) * dp0;
         }
 
         int dxL, dyL, dxR, dyR, yL, yR, xL, xR;
@@ -135,7 +135,7 @@ public class Rasterization {
                 float z = z1 * k1 + zL * kL;
                 ColorIntARGB color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
 
-                if(disableSmoothing){
+                if (disableSmoothing) {
                     pixelWriter.setRGB(xcL, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, kNotSmoothed)));
                 } else {
                     Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(nL, -kL)).normalized();
@@ -171,7 +171,7 @@ public class Rasterization {
 
                 ColorIntARGB color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
 
-                if(disableSmoothing){
+                if (disableSmoothing) {
                     pixelWriter.setRGB(xcR, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, kNotSmoothed)));
                 } else {
                     Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(nR, -kR)).normalized();
@@ -277,7 +277,7 @@ public class Rasterization {
 
                 ColorIntARGB color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
 
-                if(disableSmoothing){
+                if (disableSmoothing) {
                     pixelWriter.setRGB(xcL, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, kNotSmoothed)));
                 } else {
                     Vector3f normal = Vector3f.sum(Vector3f.mul(n3, -k3), Vector3f.mul(nL, -kL)).normalized();
@@ -314,7 +314,7 @@ public class Rasterization {
 
                 ColorIntARGB color = textureARGB[(int) (tx * tWidth)][(int) (ty * tHeight)];
 
-                if(disableSmoothing){
+                if (disableSmoothing) {
                     pixelWriter.setRGB(xcR, y0, z, borderColorTransfiguration.apply(fadeColorARGB(color, kNotSmoothed)));
                 } else {
                     Vector3f normal = Vector3f.sum(Vector3f.mul(n3, -k3), Vector3f.mul(nR, -kR)).normalized();
@@ -375,7 +375,7 @@ public class Rasterization {
             float z = z1 * x01 / dx + z2 * x02 / dx;
             ColorIntARGB color = texture[(int) (tx * width)][(int) (ty * height)];
 
-            if(disableSmoothing){
+            if (disableSmoothing) {
                 pixelWriter.setRGB(x0, yc, z, borderColorTransfiguration.apply(fadeColorARGB(color, kNotSmoothed)));
             } else {
                 Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(n2, -k2)).normalized();
@@ -419,7 +419,7 @@ public class Rasterization {
 
             ColorIntARGB color = texture[(int) (tx * width)][(int) (ty * height)];
 
-            if(disableSmoothing){
+            if (disableSmoothing) {
                 pixelWriter.setRGB(x0, yc, z, fadeColorARGB(color, kNotSmoothed));
             } else {
                 Vector3f normal = Vector3f.sum(Vector3f.mul(n1, -k1), Vector3f.mul(n2, -k2)).add(Vector3f.mul(n3, -k3)).normalized();
@@ -444,9 +444,9 @@ public class Rasterization {
         return 255 << 24 | red << 16 | green << 8 | blue;
     }
 
-    public static void fillPolygon(ZBufferPixelWriter pixelWriter, PolygonVertex v1, PolygonVertex v2, PolygonVertex v3, Vector3f light,
-                                   float ambient, ColorIntARGB[][] textureARGB, int meshColor ,
+    public static void fillPolygon(ZBufferPixelWriter pixelWriter, PolygonVertex v1, PolygonVertex v2, PolygonVertex v3, Vector3f normalToPolygon, Vector3f light,
+                                   float ambient, ColorIntARGB[][] textureARGB, int meshColor,
                                    boolean disableSmoothing) {
-        fillPolygon(pixelWriter, v1, v2, v3, light, ambient, textureARGB, c -> meshColor, disableSmoothing);
+        fillPolygon(pixelWriter, v1, v2, v3, normalToPolygon, textureARGB, light, ambient, c -> meshColor, disableSmoothing);
     }
 }

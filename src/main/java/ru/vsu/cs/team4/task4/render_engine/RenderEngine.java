@@ -2,7 +2,6 @@ package ru.vsu.cs.team4.task4.render_engine;
 
 import ru.vsu.cs.team4.task4.affine.AffineBuilder;
 import ru.vsu.cs.team4.task4.affine.affineComposite.Affine;
-import ru.vsu.cs.team4.task4.affine.affineComposite.Scale;
 import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
 import ru.vsu.cs.team4.task4.rasterization.PolygonVertex;
 import ru.vsu.cs.team4.task4.scene.LoadedModel;
@@ -17,7 +16,6 @@ import ru.vsu.cs.team4.task4.rasterization.ZBufferPixelWriter;
 import ru.vsu.cs.team4.task4.rasterization.Rasterization;
 
 import java.util.Arrays;
-import java.util.Locale;
 
 public class RenderEngine {
     private static void renderModel(final int[] buffer, int width, int height,
@@ -26,13 +24,13 @@ public class RenderEngine {
                                     Vector3f light, boolean disableMesh, boolean disableSmoothing) {
 
         for (Polygon polygon : mesh.getPolygons()) {
-            Vector3f v1NonProjected = mesh.getVertices().get(polygon.getVertexIndices().get(0));
-            Vector3f v2NonProjected = mesh.getVertices().get(polygon.getVertexIndices().get(1));
-            Vector3f v3NonProjected = mesh.getVertices().get(polygon.getVertexIndices().get(2));
+            Vector3f v1NP = mesh.getVertices().get(polygon.getVertexIndices().get(0));
+            Vector3f v2NP = mesh.getVertices().get(polygon.getVertexIndices().get(1));
+            Vector3f v3NP = mesh.getVertices().get(polygon.getVertexIndices().get(2));
 
-            Vector3f v1 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, v1NonProjected);
-            Vector3f v2 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, v2NonProjected);
-            Vector3f v3 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, v3NonProjected);
+            Vector3f v1 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, v1NP);
+            Vector3f v2 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, v2NP);
+            Vector3f v3 = GraphicConveyor.multiplyMVPMatrixByVertex(modelViewProjectionMatrix, v3NP);
 
 
             if(!(v1.getX() > -1 && v1.getX() < 1 && v1.getY() > -1 && v1.getY() < 1 && v1.getZ() > -1 && v1.getZ() < 1 ||
@@ -66,13 +64,13 @@ public class RenderEngine {
                 }
             };
 
+
             if (disableMesh) {
-                Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, light, 0.5f, textureARGB, c -> c,
+                Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, (disableSmoothing ? Vector3f.crossProduct(Vector3f.residual(v2NP, v1NP), Vector3f.residual(v3NP, v1NP)).normalized() : null), textureARGB,light, 0.5f,  c -> c,
                         disableSmoothing);
             } else {
-                Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, light, 0.5f, textureARGB, new ColorIntARGB(255,
-                                0, 0, 0).toInt(),
-                        disableSmoothing);
+                Rasterization.fillPolygon(pixelWriter, pv1, pv2, pv3, (disableSmoothing ? Vector3f.crossProduct(Vector3f.residual(v2NP, v1NP), Vector3f.residual(v3NP, v1NP)).normalized() : null), light, 0.5f,
+                        textureARGB, new ColorIntARGB(255,0, 0, 0).toInt(), disableSmoothing);
             }
 
 
@@ -102,7 +100,8 @@ public class RenderEngine {
                 modelViewProjectionMatrix.mulMut(viewMatrix);
                 modelViewProjectionMatrix.mulMut(modelMatrix);
                 renderModel(buffer, width, height, modelViewProjectionMatrix, loadedModel.getModel(),
-                        loadedModel.getTextureARGB(), Z, scene.getLight(), loadedModel.getDisableMesh(), loadedModel.isDisableSmoothing());
+                        (loadedModel.getDisableTexture() ? new ColorIntARGB[][]{{new ColorIntARGB(255,255,255,255)}} : loadedModel.getTextureARGB()),
+                        Z, scene.getLight(), loadedModel.getDisableMesh(), loadedModel.isDisableSmoothing());
 
             }
         }
@@ -115,7 +114,7 @@ public class RenderEngine {
                 if(position.getY() > 0) thetaCustom *= -1;
                 double thetaY = Math.acos(position.getZ() / horizontalLen);
                 if(position.getX() < 0) thetaY *= -1;
-                Affine affine = new AffineBuilder().
+                Affine affine = new AffineBuilder().scale(2,2,2).
                         rotateY(thetaY).
                         rotateCustom(new Vector3f(-camera.getPosition().getZ(), 0, camera.getPosition().getX()), thetaCustom).
                         move(position.getX(), position.getY(), position.getZ()).

@@ -22,7 +22,6 @@ public class LoadedModel {
     private boolean disableTexture = true;
     private boolean disableMesh = true;
 
-
     private ColorIntARGB[][] textureARGB;
 
     private Vector3f rotateV = new Vector3f(0, 0, 0);
@@ -115,7 +114,7 @@ public class LoadedModel {
         return disableSmoothing;
     }
 
-    public boolean isDisableTexture() {
+    public boolean getDisableTexture() {
         return disableTexture;
     }
 

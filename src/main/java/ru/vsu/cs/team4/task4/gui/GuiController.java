@@ -11,6 +11,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Dialog;
@@ -29,15 +30,19 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import ru.vsu.cs.team4.task4.affine.affineComposite.RotateCustom;
 import ru.vsu.cs.team4.task4.affine.affineComposite.RotateY;
+import ru.vsu.cs.team4.task4.math.Point2f;
+import ru.vsu.cs.team4.task4.math.matrix.Matrix4f;
 import ru.vsu.cs.team4.task4.math.vector.Vector2f;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 import ru.vsu.cs.team4.task4.model.Model;
 import ru.vsu.cs.team4.task4.objio.ObjReader;
 import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
 import ru.vsu.cs.team4.task4.render_engine.Camera;
+import ru.vsu.cs.team4.task4.render_engine.GraphicConveyor;
 import ru.vsu.cs.team4.task4.render_engine.RenderEngine;
 import ru.vsu.cs.team4.task4.scene.LoadedModel;
 import ru.vsu.cs.team4.task4.scene.Scene;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -84,31 +89,35 @@ public class GuiController {
     private TableColumn<Camera, HBox> cameraColumn;
 
     @FXML
-    private TextField scaleX;
+    private TextField scaleXTextField;
     @FXML
-    private TextField scaleY;
+    private TextField scaleYTextField;
     @FXML
-    private TextField scaleZ;
+    private TextField scaleZTextField;
 
     @FXML
-    private TextField translateX;
+    private TextField translateXTextField;
     @FXML
-    private TextField translateY;
+    private TextField translateYTextField;
     @FXML
-    private TextField translateZ;
+    private TextField translateZTextField;
 
     @FXML
-    private TextField rotateX;
+    private TextField rotateXTextField;
     @FXML
-    private TextField rotateY;
+    private TextField rotateYTextField;
     @FXML
-    private TextField rotateZ;
+    private TextField rotateZTextField;
+
+    @FXML
+    private Canvas coordinateSystemCanvas;
+
     private Model mesh = null;
     private Scene scene = null;
 
     private Color textureColor = Color.WHITE;
 
-    private ColorIntARGB[][] curTexture = new ColorIntARGB[][]{{new ColorIntARGB(255, 255,255,255)}};
+    private ColorIntARGB[][] curTexture = new ColorIntARGB[][]{{new ColorIntARGB(255, 255, 255, 255)}};
 
 
     private Point2D mousePos;
@@ -129,13 +138,17 @@ public class GuiController {
             button.setOnAction(actionEvent -> {
                 scene.setActiveCameraId(cellData.getValue().getId());
             });
+            Camera camera = cellData.getValue();
 
             HBox hbox = new HBox();
             hbox.getChildren().add(button);
             Label label = new Label();
 
-            label.setText("Camera " + cellData.getValue().getId());
-            HBox.setMargin(button, new Insets(0,10,0,10));
+            label.setText("Camera " + camera.getId() +
+                    " (" + String.format("%.2f", camera.getPosition().getX()) + "; " +
+                    String.format("%.2f", camera.getPosition().getY()) + "; " +
+                    String.format("%.2f", camera.getPosition().getZ()) + ")");
+            HBox.setMargin(button, new Insets(0, 10, 0, 10));
             hbox.getChildren().add(label);
             return new SimpleObjectProperty<>(hbox);
         });
@@ -187,15 +200,17 @@ public class GuiController {
                 Camera camera = scene.getActiveCamera();
                 float dx = (float) mouseEvent.getX() - (float) mousePos.getX();
                 float dy = (float) mouseEvent.getY() - (float) mousePos.getY();
-                float thetaY = -dx / 500;
-                float theta2 = dy / 500;
+                float thetaY = -dx / 250;
+                float theta2 = dy / 250;
                 RotateCustom rotateCustom = new RotateCustom(new Vector3f(-camera.getPosition().getZ(), 0, camera.getPosition().getX()), theta2);
                 RotateY rotateY = new RotateY(thetaY);
                 Vector3f new_pos = rotateY.getMatrix3f().mul(rotateCustom.getMatrix3f()).mulV(camera.getPosition());
-                if(new_pos.getX() * camera.getPosition().getX() > 0 || new_pos.getZ() * camera.getPosition().getZ() > 0){
+                if (new_pos.getX() * camera.getPosition().getX() > 0 || new_pos.getZ() * camera.getPosition().getZ() > 0) {
                     camera.setPosition(new_pos);
                 }
+                camerasTable.refresh();
                 mousePos = new Point2D((float) mouseEvent.getX(), (float) mouseEvent.getY());
+                drawCoordinateSystem();
             }
         });
 
@@ -213,11 +228,13 @@ public class GuiController {
                             camera.getPosition().getY() * (1 - CAMERA_ZOOM_STEP / s),
                             camera.getPosition().getZ() * (1 - CAMERA_ZOOM_STEP / s)));
                 }
-            } else if(scrollEvent.getDeltaY() < 0){
+            } else if (scrollEvent.getDeltaY() < 0) {
                 camera.setPosition(new Vector3f(camera.getPosition().getX() * (1 + CAMERA_ZOOM_STEP / s),
                         camera.getPosition().getY() * (1 + CAMERA_ZOOM_STEP / s),
                         camera.getPosition().getZ() * (1 + CAMERA_ZOOM_STEP / s)));
             }
+            camerasTable.refresh();
+            drawCoordinateSystem();
         });
 
         timeline = new Timeline();
@@ -229,7 +246,7 @@ public class GuiController {
             int width = (int) imageView.getFitWidth();
             int height = (int) imageView.getFitHeight();
 
-            if(width == 0 || height == 0){
+            if (width == 0 || height == 0) {
                 return;
             }
 
@@ -253,7 +270,6 @@ public class GuiController {
         });
 
 
-
         timeline.getKeyFrames().add(frame);
         timeline.play();
 
@@ -270,10 +286,12 @@ public class GuiController {
                 imageView.setFitHeight(t1.doubleValue());
             }
         });
+
+        drawCoordinateSystem();
     }
 
     @FXML
-    private void onClickAddCamera(){
+    private void onClickAddCamera() {
         scene.addCamera();
         ObservableList<Camera> list = camerasTable.getItems();
         list.clear();
@@ -281,14 +299,14 @@ public class GuiController {
     }
 
     @FXML
-    private void onClickDeleteCamera(){
+    private void onClickDeleteCamera() {
         ObservableList<Camera> selected = camerasTable.getSelectionModel().getSelectedItems();
         ObservableList<Camera> items = camerasTable.getItems();
         int activeCameraId = scene.getActiveCamera().getId();
-        if(selected.size() > 0 && items.size() > 1){
-            if(selected.get(0).getId() == activeCameraId){
-                for(Camera camera: camerasTable.getItems()){
-                    if(camera.getId() != activeCameraId){
+        if (selected.size() > 0 && items.size() > 1) {
+            if (selected.get(0).getId() == activeCameraId) {
+                for (Camera camera : camerasTable.getItems()) {
+                    if (camera.getId() != activeCameraId) {
                         scene.setActiveCameraId(camera.getId());
                         break;
                     }
@@ -330,12 +348,10 @@ public class GuiController {
 
             CheckBox checkBox1 = new CheckBox();
             checkBox1.setId(newModel.getId());
-            /*newModel.setIsActive(checkBox1);*/
 
             CheckBox checkBox2 = new CheckBox();
             checkBox2.setId(newModel.getId());
             checkBox2.setDisable(true);
-            /*newModel.setIsEditable(checkBox2);*/
 
             Button displayOptionsBtn = new Button();
             displayOptionsBtn.setText("Options");
@@ -360,31 +376,25 @@ public class GuiController {
 
 
                 // Create three CheckBox elements
-                CheckBox checkBox5 = new CheckBox("Polygonal Mesh");
+                CheckBox polygonalMeshCheckBox = new CheckBox("Polygonal Mesh");
 
-                checkBox5.setSelected(!currModel.getDisableMesh());
-                checkBox5.setOnAction(eventMesh -> {
-                    currModel.setDisableMesh(!checkBox5.isSelected());
+                polygonalMeshCheckBox.setSelected(!currModel.getDisableMesh());
+                polygonalMeshCheckBox.setOnAction(eventMesh -> {
+                    currModel.setDisableMesh(!polygonalMeshCheckBox.isSelected());
                 });
 
-                CheckBox checkBox6 = new CheckBox("Show Texture");
+                CheckBox showTextureCheckBox = new CheckBox("Show Texture");
 
-                checkBox6.setSelected(!currModel.isDisableTexture());
-                checkBox6.setOnAction(eventTexture -> {
-                    currModel.setDisableTexture(!checkBox6.isSelected());
-                    if (!currModel.isDisableTexture()) {
-                        currModel.setTextureARGB(curTexture);
-                    } else {
-                       currModel.setTextureARGB(new ColorIntARGB[][]{{new ColorIntARGB(255, 255, 255, 255)}});
-                    }
-
+                showTextureCheckBox.setSelected(!currModel.getDisableTexture());
+                showTextureCheckBox.setOnAction(eventTexture -> {
+                    currModel.setDisableTexture(!showTextureCheckBox.isSelected());
                 });
 
 
-                CheckBox checkBox7 = new CheckBox("Antialiasing");
-                checkBox7.setSelected(!currModel.isDisableSmoothing());
-                checkBox7.setOnAction(eventAntialiasing -> {
-                    currModel.setDisableSmoothing(!checkBox7.isSelected());
+                CheckBox antiAliasingCheckBox = new CheckBox("Antialiasing");
+                antiAliasingCheckBox.setSelected(!currModel.isDisableSmoothing());
+                antiAliasingCheckBox.setOnAction(eventAntialiasing -> {
+                    currModel.setDisableSmoothing(!antiAliasingCheckBox.isSelected());
                 });
 
 
@@ -409,10 +419,12 @@ public class GuiController {
                     ColorIntARGB[][] texture = new ColorIntARGB[image.getHeight()][image.getWidth()];
                     for (int i = 0; i < image.getHeight(); i++) {
                         for (int j = 0; j < image.getWidth(); j++) {
-                            texture[j][i] = new ColorIntARGB(255 << 24 | image.getRGB(j,image.getHeight() - 1 - i));
+                            texture[j][i] = new ColorIntARGB(255 << 24 | image.getRGB(j, image.getHeight() - 1 - i));
                         }
                     }
-                    curTexture = texture;
+
+                    //curTexture = texture;
+                    newModel.setTextureARGB(texture);
                 });
 
 
@@ -434,7 +446,8 @@ public class GuiController {
                     dialog.setResultConverter(buttonType -> {
                         if (buttonType == ButtonType.OK) {
                             textureColor = colorPicker.getValue();
-                            curTexture = new ColorIntARGB[][]{{new ColorIntARGB(textureColor)}};
+                            //curTexture = new ColorIntARGB[][]{{new ColorIntARGB(textureColor)}};
+                            currModel.setTextureARGB(new ColorIntARGB[][]{{new ColorIntARGB(textureColor)}});
                             return dialog.getResult();
                         }
                         return null;
@@ -447,7 +460,7 @@ public class GuiController {
                 });
 
                 // Add the CheckBox and Button elements to the dialog content
-                dialogContent.getChildren().addAll(checkBox5, checkBox6, checkBox7, loadTextureBtn,
+                dialogContent.getChildren().addAll(polygonalMeshCheckBox, showTextureCheckBox, antiAliasingCheckBox, loadTextureBtn,
                         chooseColorToFillBtn);
 
                 // Set the content of the dialog
@@ -501,6 +514,8 @@ public class GuiController {
     @FXML
     private void onClickShowHide() {
         transformationsPane.setVisible(!transformationsPane.isVisible());
+        transformationsPane.setManaged(!transformationsPane.isVisible());
+
     }
 
     @FXML
@@ -525,9 +540,9 @@ public class GuiController {
 
     @FXML
     private void onClickScale() {
-        float x = Float.parseFloat(scaleX.getText());
-        float y = Float.parseFloat(scaleY.getText());
-        float z = Float.parseFloat(scaleZ.getText());
+        float x = Float.parseFloat(scaleXTextField.getText());
+        float y = Float.parseFloat(scaleYTextField.getText());
+        float z = Float.parseFloat(scaleZTextField.getText());
 
         for (LoadedModel lm : scene.getModels()) {
 
@@ -539,9 +554,9 @@ public class GuiController {
 
     @FXML
     private void onClickTranslate() {
-        float x = Float.parseFloat(translateX.getText());
-        float y = Float.parseFloat(translateY.getText());
-        float z = Float.parseFloat(translateZ.getText());
+        float x = Float.parseFloat(translateXTextField.getText());
+        float y = Float.parseFloat(translateYTextField.getText());
+        float z = Float.parseFloat(translateZTextField.getText());
 
         for (LoadedModel lm : scene.getModels()) {
             if (scene.containsEditable(lm.getId())) {
@@ -552,15 +567,14 @@ public class GuiController {
 
     @FXML
     private void onClickRotate() {
-        float x = (float) Math.toRadians(Float.parseFloat(rotateX.getText()));
-        float y = (float) Math.toRadians(Float.parseFloat(rotateY.getText()));
-        float z = (float) Math.toRadians(Float.parseFloat(rotateZ.getText()));
+        float x = (float) Math.toRadians(Float.parseFloat(rotateXTextField.getText()));
+        float y = (float) Math.toRadians(Float.parseFloat(rotateYTextField.getText()));
+        float z = (float) Math.toRadians(Float.parseFloat(rotateZTextField.getText()));
 
         for (LoadedModel lm : scene.getModels()) {
 
             if (scene.containsEditable(lm.getId())) {
 
-         
 
                 lm.setRotateV(new Vector3f(x, y, z));
             }
@@ -616,5 +630,56 @@ public class GuiController {
         for (LoadedModel lm : selectedModels) {
             lm.setDisableSmoothing(!antialiasingBox.isSelected());
         }
+    }
+
+    private void drawCoordinateSystem() {
+        double AXIS_END_RADIUS = 4;
+        double LETTER_HALF_HEIGHT = 5;
+        double LETTER_HALF_WIDTH = 3;
+
+        coordinateSystemCanvas.getGraphicsContext2D().setFill(Color.WHITE);
+        coordinateSystemCanvas.getGraphicsContext2D().fillOval(0,0, coordinateSystemCanvas.getWidth(), coordinateSystemCanvas.getHeight());
+
+        Vector3f x = new Vector3f(0.15f, 0, 0);
+        Vector3f y = new Vector3f(0, 0.15f, 0);
+        Vector3f z = new Vector3f(0, 0, 0.15f);
+
+        Matrix4f viewProjectionMatrix = GraphicConveyor.perspective(1, 1, 0.01f, 10).
+                mul(GraphicConveyor.lookAt(new Vector3f(scene.getActiveCamera().getPosition()).normalized(), new Vector3f(0, 0, 0)));
+
+        Vector3f xp = GraphicConveyor.multiplyMVPMatrixByVertex(viewProjectionMatrix, x);
+        Vector3f yp = GraphicConveyor.multiplyMVPMatrixByVertex(viewProjectionMatrix, y);
+        Vector3f zp = GraphicConveyor.multiplyMVPMatrixByVertex(viewProjectionMatrix, z);
+
+        Point2f xLetterP = GraphicConveyor.vertexToPoint(Vector3f.mul(xp, 1.4f), (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight()) ;
+        Point2f yLetterP = GraphicConveyor.vertexToPoint(Vector3f.mul(yp, 1.4f), (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight()) ;
+        Point2f zLetterP = GraphicConveyor.vertexToPoint(Vector3f.mul(zp, 1.4f), (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight()) ;
+
+        Point2f xpOnScreen = GraphicConveyor.vertexToPoint(xp, (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight());
+        Point2f ypOnScreen = GraphicConveyor.vertexToPoint(yp, (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight());
+        Point2f zpOnScreen = GraphicConveyor.vertexToPoint(zp, (int) coordinateSystemCanvas.getWidth(), (int) coordinateSystemCanvas.getHeight());
+
+        double xC = coordinateSystemCanvas.getWidth() / 2;
+        double yC = coordinateSystemCanvas.getHeight() / 2;
+
+        coordinateSystemCanvas.getGraphicsContext2D().strokeLine(xpOnScreen.getX(), xpOnScreen.getY(), xC, yC);
+        coordinateSystemCanvas.getGraphicsContext2D().strokeLine(ypOnScreen.getX(), ypOnScreen.getY(), xC, yC);
+        coordinateSystemCanvas.getGraphicsContext2D().strokeLine(zpOnScreen.getX(), zpOnScreen.getY(), xC, yC);
+
+        coordinateSystemCanvas.getGraphicsContext2D().setFill(Color.BLACK);
+        coordinateSystemCanvas.getGraphicsContext2D().fillOval(xpOnScreen.getX() - AXIS_END_RADIUS, xpOnScreen.getY() - AXIS_END_RADIUS, AXIS_END_RADIUS * 2, AXIS_END_RADIUS * 2);
+        coordinateSystemCanvas.getGraphicsContext2D().fillOval(ypOnScreen.getX() - AXIS_END_RADIUS, ypOnScreen.getY() - AXIS_END_RADIUS, AXIS_END_RADIUS * 2, AXIS_END_RADIUS * 2);
+        coordinateSystemCanvas.getGraphicsContext2D().fillOval(zpOnScreen.getX() - AXIS_END_RADIUS, zpOnScreen.getY() - AXIS_END_RADIUS, AXIS_END_RADIUS * 2, AXIS_END_RADIUS * 2);
+
+        coordinateSystemCanvas.getGraphicsContext2D().strokeLine(xLetterP.getX() - LETTER_HALF_WIDTH, xLetterP.getY() - LETTER_HALF_HEIGHT, xLetterP.getX() + LETTER_HALF_WIDTH, xLetterP.getY() + LETTER_HALF_HEIGHT);
+        coordinateSystemCanvas.getGraphicsContext2D().strokeLine(xLetterP.getX() + LETTER_HALF_WIDTH, xLetterP.getY() - LETTER_HALF_HEIGHT, xLetterP.getX() - LETTER_HALF_WIDTH, xLetterP.getY() + LETTER_HALF_HEIGHT);
+
+        coordinateSystemCanvas.getGraphicsContext2D().strokeLine(yLetterP.getX() - LETTER_HALF_WIDTH, yLetterP.getY() - LETTER_HALF_HEIGHT, yLetterP.getX(), yLetterP.getY());
+        coordinateSystemCanvas.getGraphicsContext2D().strokeLine(yLetterP.getX() + LETTER_HALF_WIDTH, yLetterP.getY() - LETTER_HALF_HEIGHT, yLetterP.getX() - LETTER_HALF_WIDTH, yLetterP.getY() + LETTER_HALF_HEIGHT);
+
+        coordinateSystemCanvas.getGraphicsContext2D().strokeLine(zLetterP.getX() - LETTER_HALF_WIDTH, zLetterP.getY() - LETTER_HALF_HEIGHT, zLetterP.getX() + LETTER_HALF_WIDTH, zLetterP.getY() - LETTER_HALF_HEIGHT);
+        coordinateSystemCanvas.getGraphicsContext2D().strokeLine(zLetterP.getX() - LETTER_HALF_WIDTH, zLetterP.getY() + LETTER_HALF_HEIGHT, zLetterP.getX() + LETTER_HALF_WIDTH, zLetterP.getY() + LETTER_HALF_HEIGHT);
+        coordinateSystemCanvas.getGraphicsContext2D().strokeLine(zLetterP.getX() + LETTER_HALF_WIDTH, zLetterP.getY() - LETTER_HALF_HEIGHT, zLetterP.getX() - LETTER_HALF_WIDTH, zLetterP.getY() + LETTER_HALF_HEIGHT);
+
     }
 }

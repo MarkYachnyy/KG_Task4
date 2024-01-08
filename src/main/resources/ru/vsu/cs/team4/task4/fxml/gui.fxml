@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.canvas.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.input.*?>
@@ -100,15 +101,15 @@
                                     <Font name="System Bold" size="18.0" />
                                 </font>
                             </Label>
-                            <TextField fx:id="rotateZ" layoutX="69.0" layoutY="98.0" text="0" />
-                            <TextField fx:id="rotateY" layoutX="69.0" layoutY="65.0" text="0" />
-                            <TextField fx:id="rotateX" layoutX="70.0" layoutY="29.0" text="0" />
-                            <TextField fx:id="scaleX" layoutX="69.0" layoutY="188.0" text="1" />
-                            <TextField fx:id="scaleY" layoutX="69.0" layoutY="219.0" text="1" />
-                            <TextField fx:id="scaleZ" layoutX="69.0" layoutY="254.0" text="1" />
-                            <TextField fx:id="translateX" layoutX="69.0" layoutY="349.0" text="0" />
-                            <TextField fx:id="translateY" layoutX="69.0" layoutY="387.0" text="0" />
-                            <TextField fx:id="translateZ" layoutX="69.0" layoutY="426.0" text="0" />
+                            <TextField fx:id="rotateZTextField" layoutX="69.0" layoutY="98.0" text="0" />
+                            <TextField fx:id="rotateYTextField" layoutX="69.0" layoutY="65.0" text="0" />
+                            <TextField fx:id="rotateXTextField" layoutX="70.0" layoutY="29.0" text="0" />
+                            <TextField fx:id="scaleXTextField" layoutX="69.0" layoutY="188.0" text="1" />
+                            <TextField fx:id="scaleYTextField" layoutX="69.0" layoutY="219.0" text="1" />
+                            <TextField fx:id="scaleZTextField" layoutX="69.0" layoutY="254.0" text="1" />
+                            <TextField fx:id="translateXTextField" layoutX="69.0" layoutY="349.0" text="0" />
+                            <TextField fx:id="translateYTextField" layoutX="69.0" layoutY="387.0" text="0" />
+                            <TextField fx:id="translateZTextField" layoutX="69.0" layoutY="426.0" text="0" />
                             <Button layoutX="93.0" layoutY="291.0" mnemonicParsing="false" onAction="#onClickScale" prefHeight="31.0" prefWidth="64.0" text="Scale">
                                 <font>
                                     <Font name="System Bold" size="15.0" />
@@ -156,11 +157,12 @@
       </top>
    </BorderPane>
     
-   <TableView fx:id="camerasTable" layoutX="14.0" layoutY="513.0" prefHeight="200.0" prefWidth="200.0">
+   <TableView fx:id="camerasTable" layoutX="14.0" layoutY="513.0" prefHeight="200.0" prefWidth="283.0">
      <columns>
-       <TableColumn fx:id="cameraColumn" prefWidth="199.0" text="Camera" />
+       <TableColumn fx:id="cameraColumn" prefWidth="282.0" text="Camera" />
      </columns>
    </TableView>
    <Button layoutX="14.0" layoutY="473.0" mnemonicParsing="false" onAction="#onClickDeleteCamera" prefHeight="25.0" prefWidth="72.0" text="-" />
    <Button layoutX="86.0" layoutY="473.0" mnemonicParsing="false" onAction="#onClickAddCamera" prefHeight="25.0" prefWidth="72.0" text="+" />
+   <Canvas fx:id="coordinateSystemCanvas" height="152.0" layoutX="14.0" layoutY="735.0" width="152.0" />
 </AnchorPane>

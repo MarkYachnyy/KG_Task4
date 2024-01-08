@@ -12,6 +12,12 @@ public class Vector3f implements Vector<Vector3f> {
         this.z = z;
     }
 
+    public Vector3f(Vector3f vector3f) {
+        this.x = vector3f.getX();
+        this.y = vector3f.getY();
+        this.z = vector3f.getZ();
+    }
+
     public Vector3f(Vector2f v) {
         this.x = v.getX();
         this.y = v.getY();
