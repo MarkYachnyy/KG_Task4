@@ -568,6 +568,12 @@ public class GuiController {
             float y = Float.parseFloat(scaleYTextField.getText());
             float z = Float.parseFloat(scaleZTextField.getText());
 
+            if(x == 0 || y == 0 || z == 0){
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Scale value cannot equal 0", ButtonType.OK);
+                alert.showAndWait();
+                return;
+            }
+
             for (LoadedModel lm : scene.getModels()) {
 
                 if (scene.containsEditable(lm.getId())) {
