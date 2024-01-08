@@ -92,4 +92,9 @@ public class ModelTriangulated extends Model {
     public void setNormals(List<Vector3f> normals) {
         this.normals = normals;
     }
+
+    @Override
+    public void addTextureVertex(Vector2f textureVertex) {
+        this.textureVertices.add(textureVertex);
+    }
 }

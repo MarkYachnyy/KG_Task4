@@ -1,6 +1,7 @@
 package ru.vsu.cs.team4.task4.scene;
 
 
+import ru.vsu.cs.team4.task4.math.vector.Vector2f;
 import ru.vsu.cs.team4.task4.math.vector.Vector3f;
 import ru.vsu.cs.team4.task4.model.*;
 import ru.vsu.cs.team4.task4.rasterization.ColorIntARGB;
@@ -10,6 +11,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -52,16 +54,18 @@ public class LoadedModel {
         this.scaleV = scaleV;
     }
 
-
-    public LoadedModel(ModelTriangulated model, String modelPath) throws IOException {
-        this.model = model;
-    }
-
     public LoadedModel(Model model, String modelPath) throws IOException {
         ModelTriangulated newModel = new ModelTriangulated(model);
+        if(newModel.getTextureVertices().size() == 0){
+            newModel.addTextureVertex(new Vector2f(0,0));
+        }
         List<Vector3f> normals = NormalCalculator.recalculateNormals(newModel.getVertices(), newModel.getPolygons());
         for (Polygon polygon : newModel.getPolygons()) {
             polygon.setNormalIndices(new ArrayList<>(polygon.getVertexIndices()));
+            if(polygon.getTextureVertexIndices().size() == 0){
+                List<Integer> indices = Arrays.asList(0,0,0);
+                polygon.setTextureVertexIndices(indices);
+            }
         }
         newModel.setNormals(normals);
         this.model = newModel;
