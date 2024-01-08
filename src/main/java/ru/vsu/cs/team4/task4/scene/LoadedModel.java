@@ -58,7 +58,7 @@ public class LoadedModel {
         this.model = model;
     }
 
-    public LoadedModel(Model model, String modelPath) {
+    public LoadedModel(Model model, String modelPath) throws IOException {
         ModelTriangulated newModel = new ModelTriangulated(model);
         List<Vector3f> normals = NormalCalculator.recalculateNormals(newModel.getVertices(), newModel.getPolygons());
         for (Polygon polygon : newModel.getPolygons()) {
