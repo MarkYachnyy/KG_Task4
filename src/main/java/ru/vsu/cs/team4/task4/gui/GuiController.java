@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -25,6 +26,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.HBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -46,6 +49,7 @@ import ru.vsu.cs.team4.task4.scene.LoadedModel;
 import ru.vsu.cs.team4.task4.scene.Scene;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -104,6 +108,9 @@ public class GuiController {
     @FXML
     private Canvas coordinateSystemCanvas;
 
+    @FXML
+    private Text FPSCounterText;
+
     private Scene scene = null;
 
     private Color textureColor = Color.WHITE;
@@ -114,11 +121,13 @@ public class GuiController {
 
     private Timeline timeline;
 
+
     @FXML
     private void initialize() {
 
         scene = new Scene();
         modelPath.setCellValueFactory(new PropertyValueFactory<>("modelName"));
+        FPSCounterText.setFont(new Font(15));
 
         cameraColumn.setCellValueFactory(cellData -> {
             Button button = new Button();
@@ -223,36 +232,65 @@ public class GuiController {
             drawCoordinateSystem();
         });
 
-        timeline = new Timeline();
-        timeline.setCycleCount(Animation.INDEFINITE);
 
-        KeyFrame frame = new KeyFrame(Duration.millis(100), event -> {
-            Camera camera = scene.getActiveCamera();
+//        timeline = new Timeline();
+//        timeline.setCycleCount(Animation.INDEFINITE);
+//
+//        EventHandler<ActionEvent> eventHandler = event -> {
+//            Camera camera = scene.getActiveCamera();
+//
+//            int width = (int) imageView.getFitWidth();
+//            int height = (int) imageView.getFitHeight();
+//
+//            if (width == 0 || height == 0) {
+//                return;
+//            }
+//
+//            IntBuffer buffer = IntBuffer.allocate(width * height);
+//            int[] pixels = buffer.array();
+//            PixelBuffer<IntBuffer> pixelBuffer = new PixelBuffer<>(width, height, buffer, PixelFormat.getIntArgbPreInstance());
+//
+//            camera.setAspectRatio(1f * width / height);
+//
+//            RenderEngine.renderScene(pixels, width, height, scene);
+//
+//
+//            pixelBuffer.updateBuffer(c -> null);
+//            WritableImage image = new WritableImage(pixelBuffer);
+//            imageView.setImage(image);
+//        };
+//
+//        KeyFrame frame = new KeyFrame(Duration.millis(100), event -> {
+//            long start = System.currentTimeMillis();
+//            Camera camera = scene.getActiveCamera();
+//
+//            int width = (int) imageView.getFitWidth();
+//            int height = (int) imageView.getFitHeight();
+//
+//            if (width == 0 || height == 0) {
+//                return;
+//            }
+//
+//            IntBuffer buffer = IntBuffer.allocate(width * height);
+//            int[] pixels = buffer.array();
+//            PixelBuffer<IntBuffer> pixelBuffer = new PixelBuffer<>(width, height, buffer, PixelFormat.getIntArgbPreInstance());
+//
+//            camera.setAspectRatio(1f * width / height);
+//
+//            RenderEngine.renderScene(pixels, width, height, scene);
+//
+//
+//            pixelBuffer.updateBuffer(c -> null);
+//            WritableImage image = new WritableImage(pixelBuffer);
+//            imageView.setImage(image);
+//            int end = (int) (System.currentTimeMillis() - start);
+//        });
+//
+//
+//        timeline.getKeyFrames().add(frame);
+//        timeline.play();
 
-            int width = (int) imageView.getFitWidth();
-            int height = (int) imageView.getFitHeight();
-
-            if (width == 0 || height == 0) {
-                return;
-            }
-
-            IntBuffer buffer = IntBuffer.allocate(width * height);
-            int[] pixels = buffer.array();
-            PixelBuffer<IntBuffer> pixelBuffer = new PixelBuffer<>(width, height, buffer, PixelFormat.getIntArgbPreInstance());
-
-            camera.setAspectRatio(1f * width / height);
-
-            RenderEngine.renderScene(pixels, width, height, scene);
-
-
-            pixelBuffer.updateBuffer(c -> null);
-            WritableImage image = new WritableImage(pixelBuffer);
-            imageView.setImage(image);
-        });
-
-
-        timeline.getKeyFrames().add(frame);
-        timeline.play();
+        updateTimeline(100);
 
         anchorPane.widthProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -662,5 +700,40 @@ public class GuiController {
         coordinateSystemCanvas.getGraphicsContext2D().strokeLine(zLetterP.getX() - LETTER_HALF_WIDTH, zLetterP.getY() + LETTER_HALF_HEIGHT, zLetterP.getX() + LETTER_HALF_WIDTH, zLetterP.getY() + LETTER_HALF_HEIGHT);
         coordinateSystemCanvas.getGraphicsContext2D().strokeLine(zLetterP.getX() + LETTER_HALF_WIDTH, zLetterP.getY() - LETTER_HALF_HEIGHT, zLetterP.getX() - LETTER_HALF_WIDTH, zLetterP.getY() + LETTER_HALF_HEIGHT);
 
+    }
+
+    private void updateTimeline(int duration){
+        FPSCounterText.setText((1000/duration) + " FPS");
+        if(timeline != null) timeline.stop();
+        timeline = new Timeline();
+        KeyFrame frame = new KeyFrame(Duration.millis(duration), event -> {
+            long start = System.currentTimeMillis();
+            Camera camera = scene.getActiveCamera();
+
+            int width = (int) imageView.getFitWidth();
+            int height = (int) imageView.getFitHeight();
+
+            if (width == 0 || height == 0) {
+                return;
+            }
+
+            IntBuffer buffer = IntBuffer.allocate(width * height);
+            int[] pixels = buffer.array();
+            PixelBuffer<IntBuffer> pixelBuffer = new PixelBuffer<>(width, height, buffer, PixelFormat.getIntArgbPreInstance());
+
+            camera.setAspectRatio(1f * width / height);
+
+            RenderEngine.renderScene(pixels, width, height, scene);
+
+
+            pixelBuffer.updateBuffer(c -> null);
+            WritableImage image = new WritableImage(pixelBuffer);
+            imageView.setImage(image);
+            int end = (int) (System.currentTimeMillis() - start);
+            updateTimeline(Math.max(end, 17));
+        });
+        timeline.getKeyFrames().add(frame);
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
     }
 }

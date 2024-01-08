@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.vsu.cs.team4.task4.gui.GuiController">
+<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.vsu.cs.team4.task4.gui.GuiController">
     <MenuBar prefWidth="1339.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
         <Menu mnemonicParsing="false" text="File">
             <MenuItem mnemonicParsing="false" onAction="#onOpenModelMenuItemClick" text="Load Model">
@@ -147,4 +147,5 @@
    <Button layoutX="14.0" layoutY="473.0" mnemonicParsing="false" onAction="#onClickDeleteCamera" prefHeight="25.0" prefWidth="72.0" text="-" />
    <Button layoutX="86.0" layoutY="473.0" mnemonicParsing="false" onAction="#onClickAddCamera" prefHeight="25.0" prefWidth="72.0" text="+" />
    <Canvas fx:id="coordinateSystemCanvas" height="152.0" layoutX="14.0" layoutY="735.0" width="152.0" />
+   <Text fx:id="FPSCounterText" layoutX="184.0" layoutY="875.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" wrappingWidth="112.13671875" />
 </AnchorPane>
